@@ -1,0 +1,16 @@
+OPTION_CODES = {
+  "WY19P": "19" Crossflow wheels (Model Y Juniper)",
+  "PPSW": "Pearl White Multi-Coat",
+  "PN01": "Stealth Grey",
+  "PR01": "Ultra Red",
+  "PN00": "Quicksilver",
+  "PPSB": "Deep Blue Metallic",
+  "PX02": "Diamond Black (DirectLease designation, special color)",
+  "IPB8": "Interior: Black (new trim code)",
+  "IPW8": "Interior: Black & White",
+  "TW01": "Tow Package / AnhĂ¤ngerkupplung",
+  "WWY06": "19" Winter tires (Pirelli, DirectLease specific package code)",
+  "WY20A": "20" Helix wheels",
+  "APPB": "Enhanced Autopilot",
+  "APF2": "Full Self-Driving Capability",
+}
