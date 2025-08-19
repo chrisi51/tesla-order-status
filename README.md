@@ -20,6 +20,12 @@ The script stores the latest order information in `tesla_orders.json` and keeps 
 
 During the summary, additional details such as the delivery center and financing partner are shown to provide more context.
 
+In the folder `option-codes` all known tesla option codes are stored. You can put in your own json files to extend the list. Files get loaded in alphabetic order and last occurence of any option codes win.
+
+## History
+I tried to create a function, which will remember all changes between your runs. So if there is any change in a new run, it will get logged in a separate `tesla_order_history.json`. 
+The Order Information screen will always show you the current data but below that you will see the history of your runs with changing data. 
+
 ## Preview
 
 #### Main information
@@ -66,5 +72,12 @@ Financing Information:
 
 
 #### Change tracking
-no data yet =)
-
+```
+Change History:
+2025-08-19: - Order 0.details.tasks.deliveryDetails.regData.regDetails.company.address.careOf: Maximilian Mustermann
+2025-08-19: + Order 0.details.tasks.deliveryDetails.regData.regDetails.company.address.careOf: Max Mustermann
+2025-08-19: - Order 0.details.tasks.deliveryDetails.regData.orderDetails.vin: None
+2025-08-19: + Order 0.details.tasks.deliveryDetails.regData.orderDetails.vin: 131232
+2025-08-19: + Added key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.userId': 10000000
+2025-08-19: - Removed key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.ritzbitz'
+```
