@@ -16,19 +16,16 @@ Then you can run the script by running:
 python3 tesla_order_status.py
 ```
 
-The script stores the latest order information in `tesla_orders.json` and keeps a change log in `tesla_order_history.json`. Each time a difference is detected (for example a VIN assignment), the change is appended to the history file and displayed after the current status.
-
-During the summary, additional details such as the delivery center and financing partner are shown to provide more context.
-
+## Configuration
 In the folder `option-codes` all known tesla option codes are stored. You can put in your own json files to extend the list. Files get loaded in alphabetic order and last occurence of any option codes win.
 
 ## History
-I tried to create a function, which will remember all changes between your runs. So if there is any change in a new run, it will get logged in a separate `tesla_order_history.json`. 
+The script stores the latest order information in `tesla_orders.json` and keeps a change log in `tesla_order_history.json`. Each time a difference is detected (for example a VIN assignment), the change is appended to the history file and displayed after the current status.
 The Order Information screen will always show you the current data but below that you will see the history of your runs with changing data. 
 
 ## Preview
 
-#### Main information
+#### Order Information
 ```
 ---------------------------------------------
               ORDER INFORMATION
@@ -71,7 +68,7 @@ Financing Information:
 ```
 
 
-#### Change tracking
+#### Change History
 ```
 Change History:
 2025-08-19: - Order 0.details.tasks.deliveryDetails.regData.regDetails.company.address.careOf: Maximilian Mustermann
@@ -81,6 +78,12 @@ Change History:
 2025-08-19: + Added key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.userId': 10000000
 2025-08-19: - Removed key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.ritzbitz'
 ```
+## Disclaimer
+- the script is working on your host
+- no connection to me is done in any way at any time
+- you need to login via browser and return the resulting url to the script to extract the login token which is used for tha api
+- the script just uses the token to work with for the moment
+- with your permission the script stores the token on your harddisk
 
 ## Support
 If you want to support me, you can use my link on your next tesla order =)
