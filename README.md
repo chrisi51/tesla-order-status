@@ -81,3 +81,9 @@ Change History:
 2025-08-19: + Added key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.userId': 10000000
 2025-08-19: - Removed key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.ritzbitz'
 ```
+
+## Support
+If you want to support me, you can use my link on your next tesla order =)
+https://ts.la/christian906959
+
+as this is a fork i have to say thx @ https://github.com/niklaswa/tesla-order-status for the script
