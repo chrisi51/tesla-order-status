@@ -1,5 +1,5 @@
 {
-    "APPB": "Autopilot package (Standard Autopilot)",
+    "APPB": "Enhanced Autopilot",
     "APBS": "Autopilot base features",
     "EAP1": "Enhanced Autopilot",
     "FSD1": "Full Self-Driving Capability",
@@ -19,7 +19,7 @@
     "IPW8": "Interior: Black and White",
     "STY5S": "Seating: 5 Seat Interior",
     "STY7S": "Seating: 7 Seat Interior",
-    "WY19P": "Wheels: 19\"",
+    "WY19P": "19\" Crossflow wheels (Model Y Juniper)",
     "WY20P": "Wheels: 20\"",
     "SC01": "Free Unlimited Supercharging",
     "SC04": "Pay-per-use Supercharging",
