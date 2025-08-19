@@ -283,8 +283,14 @@ for detailed_order in detailed_new_orders:
     print(f"{color_text('- Delivery Appointment:', '94')} {scheduling.get('apptDateTimeAddressStr', 'N/A')}")
 
     print(f"\n{color_text('Financing Information:', '94')}")
-    print(f"{color_text('- Finance Partner:', '94')} {final_payment_data.get('teslaFinanceDetails', {}).get('financePartnerName', 'N/A')}")
-
+    finance_partner = (
+        final_payment_data
+        .get('financingDetails', {})
+        .get('teslaFinanceDetails', {})
+        .get('financePartnerName', 'N/A')
+    )
+    print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
+    
     print(f"{'-'*45}\n")
 
 history = load_history_from_file()
