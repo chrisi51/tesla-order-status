@@ -23,6 +23,16 @@ ORDERS_FILE = 'tesla_orders.json'
 HISTORY_FILE = 'tesla_order_history.json'
 APP_VERSION = '9.99.9-9999' # we can use a dummy version here, as the API does not check it strictly
 
+OPTION_CODES = {}
+for path in sorted(glob("./option-codes/*.json")):
+    with open(path, encoding="utf-8") as f:
+        OPTION_CODES.update(json.load(f))  # last wins
+
+def decode_option_codes(option_string: str):
+    """Return a list of tuples with (code, description)."""
+    codes = [c.strip() for c in option_string.split(',') if c.strip()]
+    return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
+
 def color_text(text, color_code):
     return f"\033[{color_code}m{text}\033[0m"
 
@@ -250,7 +260,13 @@ for detailed_order in detailed_new_orders:
     print(f"{color_text('- Status:', '94')} {order['orderStatus']}")
     print(f"{color_text('- Model:', '94')} {order['modelCode']}")
     print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
-    
+
+    decoded_options = decode_option_codes(order.get('mktOptions', ''))
+    if decoded_options:
+        print(f"\n{color_text('Configuration Options:', '94')}")
+        for code, description in decoded_options:
+            print(f"{color_text(f'- {code}:', '94')} {description}")
+            
     print(f"\n{color_text('Reservation Details:', '94')}")
     print(f"{color_text('- Reservation Date:', '94')} {order_info.get('reservationDate', 'N/A')}")
     print(f"{color_text('- Order Booked Date:', '94')} {order_info.get('orderBookedDate', 'N/A')}")
