@@ -31,7 +31,7 @@ for path in sorted(glob("./option-codes/*.json")):
 
 def decode_option_codes(option_string: str):
     """Return a list of tuples with (code, description)."""
-    codes = [c.strip() for c in option_string.split(',') if c.strip()]
+    codes = sorted(c.strip() for c in option_string.split(',') if c.strip())
     return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
 
 def color_text(text, color_code):
