@@ -8,7 +8,8 @@
     "MDL3": "Model 3",
     "MDLS": "Model S",
     "MDLX": "Model X",
-    "MTY47": "Model Y Long Range Dual Motor",
+    "MTY47": "Model Y Long Range Dual Motor - AWD LR (Juniper)",
+    "MTY46": "Model Y Short Range Rear Motor - RWD SR (Juniper)"
     "MTY45": "Model Y Performance",
     "PPSW": "Paint: Pearl White Multi-Coat",
     "PPMR": "Paint: Red Multi-Coat",
@@ -16,6 +17,7 @@
     "PMNG": "Paint: Stealth Gray",
     "PMBL": "Paint: Solid Black",
     "IPB0": "Interior: All Black",
+    "IPB7": "Interior: Black"
     "IPW8": "Interior: Black and White",
     "STY5S": "Seating: 5 Seat Interior",
     "STY7S": "Seating: 7 Seat Interior",
