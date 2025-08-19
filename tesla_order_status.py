@@ -6,6 +6,7 @@ import hashlib
 import requests
 import webbrowser
 import urllib.parse
+import re
 
 from tesla_stores import TeslaStore
 
@@ -19,6 +20,7 @@ CODE_CHALLENGE_METHOD = 'S256'
 STATE = os.urandom(16).hex()
 TOKEN_FILE = 'tesla_tokens.json'
 ORDERS_FILE = 'tesla_orders.json'
+HISTORY_FILE = 'tesla_order_history.json'
 APP_VERSION = '9.99.9-9999' # we can use a dummy version here, as the API does not check it strictly
 
 def color_text(text, color_code):
@@ -119,6 +121,22 @@ def load_orders_from_file():
     return None
 
 
+def load_history_from_file():
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, 'r') as f:
+            return json.load(f)
+    return []
+
+
+def save_history_to_file(history):
+    with open(HISTORY_FILE, 'w') as f:
+        json.dump(history, f)
+
+
+def strip_color(text):
+    return re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
+
+
 def compare_dicts(old_dict, new_dict, path=''):
     differences = []
     for key in old_dict:
@@ -202,6 +220,12 @@ if old_orders:
         for diff in differences:
             print(diff)
         save_orders_to_file(detailed_new_orders)
+        history = load_history_from_file()
+        history.append({
+            'timestamp': time.strftime('%Y-%m-%d'),
+            'changes': [strip_color(d) for d in differences]
+        })
+        save_history_to_file(history)
     else:
         print(color_text("No differences found.", '90'))
     
@@ -236,9 +260,19 @@ for detailed_order in detailed_new_orders:
 
     print(f"\n{color_text('Delivery Information:', '94')}")
     print(f"{color_text('- Routing Location:', '94')} {order_info.get('vehicleRoutingLocation', 'N/A')} ({TeslaStore(order_info.get('vehicleRoutingLocation', 0)).label})")
+    print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
     print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
     print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
     print(f"{color_text('- Delivery Appointment:', '94')} {scheduling.get('apptDateTimeAddressStr', 'N/A')}")
 
+    print(f"\n{color_text('Financing Information:', '94')}")
+    print(f"{color_text('- Finance Partner:', '94')} {final_payment_data.get('teslaFinanceDetails', {}).get('financePartnerName', 'N/A')}")
+
     print(f"{'-'*45}\n")
 
+history = load_history_from_file()
+if history:
+    print(color_text("\nChange History:", '94'))
+    for entry in history:
+        for change in entry['changes']:
+            print(f"{entry['timestamp']}: {change}")

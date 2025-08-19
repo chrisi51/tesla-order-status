@@ -16,6 +16,10 @@ Then you can run the script by running:
 python3 tesla_order_status.py
 ```
 
+The script stores the latest order information in `tesla_orders.json` and keeps a change log in `tesla_order_history.json`. Each time a difference is detected (for example a VIN assignment), the change is appended to the history file and displayed after the current status.
+
+During the summary, additional details such as the delivery center and financing partner are shown to provide more context.
+
 ## Preview
 
 #### Main information
