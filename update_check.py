@@ -121,9 +121,6 @@ def main() -> int:
     # Neuestes (jüngstes) mtime unter den angegebenen Dateien
     newest_path, newest_dt = max(mtimes.items(), key=lambda kv: kv[1])
 
-    print(f"Feed (letzter Commit): {last_commit_dt.isoformat()} (UTC)")
-    print(f"Neuste lokale Datei aus LISTE: '{newest_path}' mit mtime {newest_dt.isoformat()} (UTC)\n")
-
     if last_commit_dt > newest_dt:
         print("[UPDATE AVAILABLE]")
         print(f"Last Update: {human_delta(last_commit_dt, newest_dt)}")
