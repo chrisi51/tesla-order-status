@@ -10,6 +10,7 @@ import urllib.parse
 import re
 
 from tesla_stores import TeslaStore
+from update_check import main as run_update_check
 
 # Define constants
 CLIENT_ID = 'ownerapi'
@@ -299,3 +300,5 @@ if history:
     for entry in history:
         for change in entry['changes']:
             print(f"{entry['timestamp']}: {change}")
+
+run_update_check()
