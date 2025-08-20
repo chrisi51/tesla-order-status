@@ -123,7 +123,7 @@ def main() -> int:
 
     if last_commit_dt > newest_dt:
         print("[UPDATE AVAILABLE]")
-        print(f"Last Update: {human_delta(last_commit_dt, newest_dt)}")
+        print(f"Last Update: {human_delta(last_commit_dt, newest_dt)} ago")
         print(f"Download: {FEED_URL}/archive/refs/heads/main.zip")
         return 1
     else:
