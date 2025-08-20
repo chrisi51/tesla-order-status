@@ -1,3 +1,9 @@
+## Download
+Download the complete projekt. 
+If you don't know how to do so, just follow that link: https://github.com/chrisi51/tesla-order-status/archive/refs/heads/main.zip 
+
+Don't try to just run single scripts without the context of the entire projekt =)
+
 ## Installation
 
 To run the script, you need to install python3 for your operating system.
