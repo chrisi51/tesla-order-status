@@ -33,7 +33,9 @@ Then you can run the script by running:
 python3 tesla_order_status.py
 ```
 ### Optional flags:
-
+```sh
+python3 tesla_order_status.py --help
+```
 #### Output Modes
 Only one of the options can be used at a time.
 - `--details` show additional information such as financing details.
