@@ -8,6 +8,7 @@ import requests
 import webbrowser
 import urllib.parse
 import re
+import sys
 
 from tesla_stores import TeslaStore
 from update_check import main as run_update_check
@@ -35,8 +36,27 @@ def decode_option_codes(option_string: str):
     codes = sorted(c.strip() for c in option_string.split(',') if c.strip())
     return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
 
+def supports_color():
+    """Return True if ANSI colors are supported on this output."""
+    if os.getenv("NO_COLOR"):
+        return False
+    if sys.platform == "win32":
+        try:
+            import colorama
+
+            colorama.init()  # type: ignore
+            return True
+        except Exception:
+            return False
+    return sys.stdout.isatty()
+
+
+_USE_COLOR = supports_color()
+
 def color_text(text, color_code):
-    return f"\033[{color_code}m{text}\033[0m"
+    if _USE_COLOR:
+        return f"\033[{color_code}m{text}\033[0m"
+    return text
 
 def generate_code_verifier_and_challenge():
     code_verifier = base64.urlsafe_b64encode(os.urandom(32)).rstrip(b'=').decode('utf-8')
