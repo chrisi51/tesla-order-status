@@ -32,6 +32,16 @@ Then you can run the script by running:
 ```sh
 python3 tesla_order_status.py
 ```
+### Optional flags:
+
+- `--details` show additional information such as financing details.
+- `--share` hide personal data like order ID and VIN for sharing.
+- `--status` only report whether the order information has changed since the last run. no login happens, so tesla_tokens.json have to be present already. token will get refreshed if necessary.
+  - 0 => no changes
+  - 1 => changes detected
+  - -1 => error ... you better run the script once without any params to make sure, it is working. Possibly the api token is invalid or there is no tesla_orders.json already
+
+Only one of the options can be used at a time.
 
 ## Configuration
 In the folder `option-codes` all known tesla option codes are stored. You can put in your own json files to extend the list. Files get loaded in alphabetic order and last occurence of any option codes win.

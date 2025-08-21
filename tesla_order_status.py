@@ -1,4 +1,5 @@
 from glob import glob
+import argparse
 import base64
 import json
 import os
@@ -30,6 +31,19 @@ OPTION_CODES = {}
 for path in sorted(glob("./option-codes/*.json")):
     with open(path, encoding="utf-8") as f:
         OPTION_CODES.update(json.load(f))  # last wins
+
+parser = argparse.ArgumentParser(description="Retrieve Tesla order status.")
+group = parser.add_mutually_exclusive_group()
+group.add_argument("--details", action="store_true", help="Show additional details such as financing information.")
+group.add_argument("--share", action="store_true", help="Hide personal data like Order ID and VIN for sharing.")
+group.add_argument("--status", action="store_true", help="Only report whether there are changes since the last check.")
+args = parser.parse_args()
+
+DETAILS_MODE = args.details
+SHARE_MODE = args.share
+STATUS_MODE = args.status
+
+TODAY = time.strftime('%Y-%m-%d')
 
 def decode_option_codes(option_string: str):
     """Return a list of tuples with (code, description)."""
@@ -100,7 +114,8 @@ def exchange_code_for_tokens(auth_code):
 def save_tokens_to_file(tokens):
     with open(TOKEN_FILE, 'w') as f:
         json.dump(tokens, f)
-    print(color_text(f"> Tokens saved to '{TOKEN_FILE}'", '94'))
+    if not STATUS_MODE:
+        print(color_text(f"> Tokens saved to '{TOKEN_FILE}'", '94'))
 
 
 def load_tokens_from_file():
@@ -143,7 +158,8 @@ def get_order_details(order_id, access_token):
 def save_orders_to_file(orders):
     with open(ORDERS_FILE, 'w') as f:
         json.dump(orders, f)
-    print(color_text(f"\n> Orders saved to '{ORDERS_FILE}'", '94'))
+    if not STATUS_MODE:
+        print(color_text(f"\n> Orders saved to '{ORDERS_FILE}'", '94'))
 
 
 def load_orders_from_file():
@@ -200,7 +216,8 @@ def compare_orders(old_orders, new_orders):
 
 
 # Main script logic
-print(color_text("\n> Start retrieving the information. Please be patient...\n", '94'))
+if not STATUS_MODE:
+    print(color_text("\n> Start retrieving the information. Please be patient...\n", '94'))
 
 code_verifier, code_challenge = generate_code_verifier_and_challenge()
 
@@ -211,7 +228,8 @@ if os.path.exists(TOKEN_FILE):
         refresh_token = token_file['refresh_token']
 
         if not is_token_valid(access_token):
-            print(color_text("> Access token is not valid. Refreshing tokens...", '94'))
+            if not STATUS_MODE:
+                print(color_text("> Access token is not valid. Refreshing tokens...", '94'))
             token_response = refresh_tokens(refresh_token)
             access_token = token_response['access_token']
             # refresh access token in file
@@ -219,18 +237,26 @@ if os.path.exists(TOKEN_FILE):
             save_tokens_to_file(token_file)
 
     except (json.JSONDecodeError, KeyError) as e:
-        print(color_text("> Error loading tokens from file. Re-authenticating...", '94'))
+        if not STATUS_MODE:
+            print(color_text("> Error loading tokens from file. Re-authenticating...", '94'))
+            token_response = exchange_code_for_tokens(get_auth_code())
+            access_token = token_response['access_token']
+            refresh_token = token_response['refresh_token']
+            save_tokens_to_file(token_response)
+        else:
+            print(-1)
+            sys.exit(0)
+
+else:
+    if not STATUS_MODE:
         token_response = exchange_code_for_tokens(get_auth_code())
         access_token = token_response['access_token']
         refresh_token = token_response['refresh_token']
-        save_tokens_to_file(token_response)
-else:
-    token_response = exchange_code_for_tokens(get_auth_code())
-    access_token = token_response['access_token']
-    refresh_token = token_response['refresh_token']
-    if input(color_text("Would you like to save the tokens to a file in the current directory for use in future requests? (y/n): ", '93')).lower() == 'y':
-        save_tokens_to_file(token_response)
-
+        if input(color_text("Would you like to save the tokens to a file in the current directory for use in future requests? (y/n): ", '93')).lower() == 'y':
+            save_tokens_to_file(token_response)
+    else:
+        print(-1)
+        sys.exit(0)
 old_orders = load_orders_from_file()
 new_orders = retrieve_orders(access_token)
 
@@ -248,23 +274,29 @@ for order in new_orders:
 if old_orders:
     differences = compare_orders(old_orders, detailed_new_orders)
     if differences:
-        print(color_text("Differences found:", '90'))
-        for diff in differences:
-            print(diff)
+        if STATUS_MODE:
+            print("1")
         save_orders_to_file(detailed_new_orders)
         history = load_history_from_file()
         history.append({
-            'timestamp': time.strftime('%Y-%m-%d'),
+            'timestamp': TODAY,
             'changes': [strip_color(d) for d in differences]
         })
         save_history_to_file(history)
     else:
-        print(color_text("No differences found.", '90'))
-    
+        if STATUS_MODE:
+            print("0")
+
 else:
-    # ask user if they want to save the new orders to a file for comparison next time
-    if input(color_text("Would you like to save the order information to a file for future comparison? (y/n): ", '93')).lower() == 'y':
-        save_orders_to_file(detailed_new_orders)
+    if STATUS_MODE:
+        print("-1")
+    else:
+        # ask user if they want to save the new orders to a file for comparison next time
+        if input(color_text("Would you like to save the order information to a file for future comparison? (y/n): ", '93')).lower() == 'y':
+            save_orders_to_file(detailed_new_orders)
+
+if STATUS_MODE:
+    sys.exit(0)
 
 for detailed_order in detailed_new_orders:
     order = detailed_order['order']
@@ -278,10 +310,12 @@ for detailed_order in detailed_new_orders:
     print(f"{'-'*45}")
 
     print(f"{color_text('Order Details:', '94')}")
-    print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
+    if not SHARE_MODE:
+        print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
     print(f"{color_text('- Status:', '94')} {order['orderStatus']}")
     print(f"{color_text('- Model:', '94')} {order['modelCode']}")
-    print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
+    if not SHARE_MODE:
+        print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
 
     decoded_options = decode_option_codes(order.get('mktOptions', ''))
     if decoded_options:
@@ -303,14 +337,15 @@ for detailed_order in detailed_new_orders:
     print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
     print(f"{color_text('- Delivery Appointment:', '94')} {scheduling.get('apptDateTimeAddressStr', 'N/A')}")
 
-    print(f"\n{color_text('Financing Information:', '94')}")
-    finance_partner = (
-        final_payment_data
-        .get('financingDetails', {})
-        .get('teslaFinanceDetails', {})
-        .get('financePartnerName', 'N/A')
-    )
-    print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
+    if DETAILS_MODE:
+        print(f"\n{color_text('Financing Information:', '94')}")
+        finance_partner = (
+            final_payment_data
+            .get('financingDetails', {})
+            .get('teslaFinanceDetails', {})
+            .get('financePartnerName', 'N/A')
+        )
+        print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
     
     print(f"{'-'*45}\n")
 
@@ -319,6 +354,12 @@ if history:
     print(color_text("\nChange History:", '94'))
     for entry in history:
         for change in entry['changes']:
-            print(f"{entry['timestamp']}: {change}")
+            msg = f"{entry['timestamp']}: {change}"
+            if entry['timestamp'] == TODAY:
+                print(color_text(msg, '92'))
+            else:
+                print(msg)
 
 run_update_check()
+
+print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")

@@ -1,4 +1,6 @@
 /__pycache__/*
+.idea
+.venv
 /tesla_orders.json
 /tesla_tokens.json
 /tesla_order_history.json
