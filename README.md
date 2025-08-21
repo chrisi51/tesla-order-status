@@ -53,6 +53,9 @@ In the folder `option-codes` all known tesla option codes are stored. You can pu
 The script stores the latest order information in `tesla_orders.json` and keeps a change log in `tesla_order_history.json`. Each time a difference is detected (for example a VIN assignment), the change is appended to the history file and displayed after the current status.
 The Order Information screen will always show you the current data but below that you will see the history of your runs with changing data. 
 
+## Issues
+If you have any issues, running the script or getting error messages, pleas feel free to ask for help in the [isses](https://github.com/chrisi51/tesla-order-status/issues) section or pm me at the [tff-forum](https://tff-forum.de/u/chrisi51/summary)
+
 ## Preview
 
 #### Order Information

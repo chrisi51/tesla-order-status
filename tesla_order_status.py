@@ -226,7 +226,8 @@ def display_orders(detailed_orders):
         order = detailed_order['order']
         order_details = detailed_order['details']
         scheduling = order_details.get('tasks', {}).get('scheduling', {})
-        order_info = order_details.get('tasks', {}).get('registration', {}).get('orderDetails', {})
+        registration_data = order_details.get('tasks', {}).get('registration', {})
+        order_info = registration_data.get('orderDetails', {})
         final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
 
         print(f"\n{'-'*45}")
@@ -247,9 +248,13 @@ def display_orders(detailed_orders):
             for code, description in decoded_options:
                 print(f"{color_text(f'- {code}:', '94')} {description}")
 
-        print(f"\n{color_text('Reservation Details:', '94')}")
+        print(f"\n{color_text('Order Timeline:', '94')}")
         print(f"{color_text('- Reservation Date:', '94')} {order_info.get('reservationDate', 'N/A')}")
         print(f"{color_text('- Order Booked Date:', '94')} {order_info.get('orderBookedDate', 'N/A')}")
+        if registration_data.get('expectedRegDate'):
+            print(f"{color_text('- Expected Registration Date:', '94')} {registration_data.get('expectedRegDate', 'N/A')}")
+        if final_payment_data.get('etaToDeliveryCenter', {}):
+            print(f"{color_text('- ETA To Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
 
         print(f"\n{color_text('Vehicle Status:', '94')}")
         print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
@@ -263,13 +268,49 @@ def display_orders(detailed_orders):
 
         if DETAILS_MODE:
             print(f"\n{color_text('Financing Information:', '94')}")
-            finance_partner = (
-                final_payment_data
-                .get('financingDetails', {})
-                .get('teslaFinanceDetails', {})
-                .get('financePartnerName', 'N/A')
-            )
-            print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
+            financing_details = final_payment_data.get('financingDetails') or {}
+            order_type = financing_details.get('orderType')
+            tesla_finance_details = financing_details.get('teslaFinanceDetails') or {}
+
+            # Handle cash purchases where no financing data is present
+            if order_type == 'CASH' or not final_payment_data.get('financingIntent'):
+                print(f"{color_text('- Payment Type:', '94')} Cash")
+                payment_details = final_payment_data.get('paymentDetails') or []
+                if payment_details:
+                    first_payment = payment_details[0]
+                    amount_paid = first_payment.get('amountPaid', 'N/A')
+                    payment_type = first_payment.get('paymentType', 'N/A')
+                    print(f"{color_text('- Amount Paid:', '94')} {amount_paid}")
+                    print(f"{color_text('- Payment Method:', '94')} {payment_type}")
+                account_balance = final_payment_data.get('accountBalance')
+                if account_balance is not None:
+                    print(f"{color_text('- Account Balance:', '94')} {account_balance}")
+                amount_due = final_payment_data.get('amountDue')
+                if amount_due is not None:
+                    print(f"{color_text('- Amount Due:', '94')} {amount_due}")
+            else:
+                finance_product = financing_details.get('financialProductType', 'N/A')
+                print(f"{color_text('- Finance Product:', '94')} {finance_product}")
+                finance_partner = tesla_finance_details.get('financePartnerName', 'N/A')
+                print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
+                monthly_payment = tesla_finance_details.get('monthlyPayment')
+                if monthly_payment is not None:
+                    print(f"{color_text('- Monthly Payment:', '94')} {monthly_payment}")
+                term_months = tesla_finance_details.get('termsInMonths')
+                if term_months is not None:
+                    print(f"{color_text('- Term (months):', '94')} {term_months}")
+                interest_rate = tesla_finance_details.get('interestRate')
+                if interest_rate is not None:
+                    print(f"{color_text('- Interest Rate:', '94')} {interest_rate} %")
+                mileage = tesla_finance_details.get('mileage')
+                if mileage is not None:
+                    print(f"{color_text('- Range per Year:', '94')} {mileage}")
+                financed_amount = final_payment_data.get('amountDueFinancier')
+                if financed_amount is not None:
+                    print(f"{color_text('- Financed Amount:', '94')} {financed_amount}")
+                approved_amount = tesla_finance_details.get('approvedLoanAmount')
+                if approved_amount is not None:
+                    print(f"{color_text('- Approved Amount:', '94')} {approved_amount}")
 
         print(f"{'-'*45}\n")
 
