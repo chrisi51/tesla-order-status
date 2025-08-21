@@ -37,11 +37,13 @@ group = parser.add_mutually_exclusive_group()
 group.add_argument("--details", action="store_true", help="Show additional details such as financing information.")
 group.add_argument("--share", action="store_true", help="Hide personal data like Order ID and VIN for sharing.")
 group.add_argument("--status", action="store_true", help="Only report whether there are changes since the last check.")
+parser.add_argument("--cached", action="store_true", help="Use locally cached data without contacting the API.")
 args = parser.parse_args()
 
 DETAILS_MODE = args.details
 SHARE_MODE = args.share
 STATUS_MODE = args.status
+CACHED_MODE = args.cached
 
 TODAY = time.strftime('%Y-%m-%d')
 
@@ -215,7 +217,89 @@ def compare_orders(old_orders, new_orders):
     return differences
 
 
-# Main script logic
+def display_orders(detailed_orders):
+    for detailed_order in detailed_orders:
+        order = detailed_order['order']
+        order_details = detailed_order['details']
+        scheduling = order_details.get('tasks', {}).get('scheduling', {})
+        order_info = order_details.get('tasks', {}).get('registration', {}).get('orderDetails', {})
+        final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
+
+        print(f"\n{'-'*45}")
+        print(f"{'ORDER INFORMATION':^45}")
+        print(f"{'-'*45}")
+
+        print(f"{color_text('Order Details:', '94')}")
+        if not SHARE_MODE:
+            print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
+        print(f"{color_text('- Status:', '94')} {order['orderStatus']}")
+        print(f"{color_text('- Model:', '94')} {order['modelCode']}")
+        if not SHARE_MODE:
+            print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
+
+        decoded_options = decode_option_codes(order.get('mktOptions', ''))
+        if decoded_options:
+            print(f"\n{color_text('Configuration Options:', '94')}")
+            for code, description in decoded_options:
+                print(f"{color_text(f'- {code}:', '94')} {description}")
+
+        print(f"\n{color_text('Reservation Details:', '94')}")
+        print(f"{color_text('- Reservation Date:', '94')} {order_info.get('reservationDate', 'N/A')}")
+        print(f"{color_text('- Order Booked Date:', '94')} {order_info.get('orderBookedDate', 'N/A')}")
+
+        print(f"\n{color_text('Vehicle Status:', '94')}")
+        print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
+
+        print(f"\n{color_text('Delivery Information:', '94')}")
+        print(f"{color_text('- Routing Location:', '94')} {order_info.get('vehicleRoutingLocation', 'N/A')} ({TeslaStore(order_info.get('vehicleRoutingLocation', 0)).label})")
+        print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
+        print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
+        print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
+        print(f"{color_text('- Delivery Appointment:', '94')} {scheduling.get('apptDateTimeAddressStr', 'N/A')}")
+
+        if DETAILS_MODE:
+            print(f"\n{color_text('Financing Information:', '94')}")
+            finance_partner = (
+                final_payment_data
+                .get('financingDetails', {})
+                .get('teslaFinanceDetails', {})
+                .get('financePartnerName', 'N/A')
+            )
+            print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
+
+        print(f"{'-'*45}\n")
+
+    history = load_history_from_file()
+    if history:
+        print(color_text("\nChange History:", '94'))
+        for entry in history:
+            for change in entry['changes']:
+                msg = f"{entry['timestamp']}: {change}"
+                if entry['timestamp'] == TODAY:
+                    print(color_text(msg, '92'))
+                else:
+                    print(msg)
+
+    run_update_check()
+
+    print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+
+
+ # Main script logic
+if CACHED_MODE:
+    cached_orders = load_orders_from_file()
+    if cached_orders:
+        if STATUS_MODE:
+            print("0")
+        else:
+            display_orders(cached_orders)
+    else:
+        if STATUS_MODE:
+            print("-1")
+        else:
+            print(color_text(f"No cached orders found in '{ORDERS_FILE}'", '91'))
+    sys.exit(0)
+
 if not STATUS_MODE:
     print(color_text("\n> Start retrieving the information. Please be patient...\n", '94'))
 
@@ -298,68 +382,4 @@ else:
 if STATUS_MODE:
     sys.exit(0)
 
-for detailed_order in detailed_new_orders:
-    order = detailed_order['order']
-    order_details = detailed_order['details']
-    scheduling = order_details.get('tasks', {}).get('scheduling', {})
-    order_info = order_details.get('tasks', {}).get('registration', {}).get('orderDetails', {})
-    final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
-
-    print(f"\n{'-'*45}")
-    print(f"{'ORDER INFORMATION':^45}")
-    print(f"{'-'*45}")
-
-    print(f"{color_text('Order Details:', '94')}")
-    if not SHARE_MODE:
-        print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
-    print(f"{color_text('- Status:', '94')} {order['orderStatus']}")
-    print(f"{color_text('- Model:', '94')} {order['modelCode']}")
-    if not SHARE_MODE:
-        print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
-
-    decoded_options = decode_option_codes(order.get('mktOptions', ''))
-    if decoded_options:
-        print(f"\n{color_text('Configuration Options:', '94')}")
-        for code, description in decoded_options:
-            print(f"{color_text(f'- {code}:', '94')} {description}")
-            
-    print(f"\n{color_text('Reservation Details:', '94')}")
-    print(f"{color_text('- Reservation Date:', '94')} {order_info.get('reservationDate', 'N/A')}")
-    print(f"{color_text('- Order Booked Date:', '94')} {order_info.get('orderBookedDate', 'N/A')}")
-
-    print(f"\n{color_text('Vehicle Status:', '94')}")
-    print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
-
-    print(f"\n{color_text('Delivery Information:', '94')}")
-    print(f"{color_text('- Routing Location:', '94')} {order_info.get('vehicleRoutingLocation', 'N/A')} ({TeslaStore(order_info.get('vehicleRoutingLocation', 0)).label})")
-    print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
-    print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
-    print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
-    print(f"{color_text('- Delivery Appointment:', '94')} {scheduling.get('apptDateTimeAddressStr', 'N/A')}")
-
-    if DETAILS_MODE:
-        print(f"\n{color_text('Financing Information:', '94')}")
-        finance_partner = (
-            final_payment_data
-            .get('financingDetails', {})
-            .get('teslaFinanceDetails', {})
-            .get('financePartnerName', 'N/A')
-        )
-        print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
-    
-    print(f"{'-'*45}\n")
-
-history = load_history_from_file()
-if history:
-    print(color_text("\nChange History:", '94'))
-    for entry in history:
-        for change in entry['changes']:
-            msg = f"{entry['timestamp']}: {change}"
-            if entry['timestamp'] == TODAY:
-                print(color_text(msg, '92'))
-            else:
-                print(msg)
-
-run_update_check()
-
-print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+display_orders(detailed_new_orders)
