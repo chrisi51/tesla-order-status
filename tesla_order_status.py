@@ -92,9 +92,13 @@ def get_auth_code():
         'code_challenge_method': CODE_CHALLENGE_METHOD,
     }
     auth_url = f"{AUTH_URL}?{urllib.parse.urlencode(auth_params)}"
-    print(color_text("> Opening the browser for authentication:", '94'), auth_url)
+    print(color_text("To retrieve your order status, you need to authenticate with your Tesla account.", '93'))
+    print(color_text("A browser window will open with the Tesla login page. After logging in you will likely see a 'Page Not Found' page.", '93'))
+    print(color_text("Copy the full URL of that page and return here. The authentication happens only between you and Tesla; no data leaves your system.", '93'))
+    if input(color_text("Proceed to open the login page? (y/n): ", '93')).lower() != 'y':
+        print(color_text("Authentication cancelled.", '91'))
+        sys.exit(0)
     webbrowser.open(auth_url)
-    print(color_text("After authentication, you’ll be redirected to a new URL. The page might show a 'Page Not Found' error message, but the URL itself is still valid for this purpose.", '90'))
     redirected_url = input(color_text("Please enter the redirected URL here: ", '93'))
     parsed_url = urllib.parse.urlparse(redirected_url)
     return urllib.parse.parse_qs(parsed_url.query).get('code')[0]
