@@ -221,6 +221,14 @@ def compare_orders(old_orders, new_orders):
     return differences
 
 
+def truncate_timestamp(timestamp):
+    """Truncates timestamp to date only if SHARE_MODE is active."""
+    if not timestamp or timestamp == 'N/A':
+        return timestamp
+    if SHARE_MODE and 'T' in timestamp:
+        return timestamp.split('T')[0]
+    return timestamp
+
 def display_orders(detailed_orders):
     for detailed_order in detailed_orders:
         order = detailed_order['order']
@@ -249,12 +257,12 @@ def display_orders(detailed_orders):
                 print(f"{color_text(f'- {code}:', '94')} {description}")
 
         print(f"\n{color_text('Order Timeline:', '94')}")
-        print(f"{color_text('- Reservation Date:', '94')} {order_info.get('reservationDate', 'N/A')}")
-        print(f"{color_text('- Order Booked Date:', '94')} {order_info.get('orderBookedDate', 'N/A')}")
+        print(f"{color_text('- Reservation Date:', '94')} {truncate_timestamp(order_info.get('reservationDate', 'N/A'))}")
+        print(f"{color_text('- Order Booked Date:', '94')} {truncate_timestamp(order_info.get('orderBookedDate', 'N/A'))}")
         if registration_data.get('expectedRegDate'):
-            print(f"{color_text('- Expected Registration Date:', '94')} {registration_data.get('expectedRegDate', 'N/A')}")
+            print(f"{color_text('- Expected Registration Date:', '94')} {truncate_timestamp(registration_data.get('expectedRegDate', 'N/A'))}")
         if final_payment_data.get('etaToDeliveryCenter', {}):
-            print(f"{color_text('- ETA To Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
+            print(f"{color_text('- ETA To Delivery Center:', '94')} {truncate_timestamp(final_payment_data.get('etaToDeliveryCenter', 'N/A'))}")
 
         print(f"\n{color_text('Vehicle Status:', '94')}")
         print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
