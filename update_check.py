@@ -3,15 +3,15 @@
 """
 check_files_fixed_list.py
 
-Die zu prüfenden Dateien stehen in FILES_TO_CHECK (Array).
-Vergleicht das neueste mtime aus dieser Liste mit dem letzten Commit
-des festen Atom-Feeds:
+The files to check are stored in FILES_TO_CHECK (array).
+Compares the newest mtime from this list with the last commit
+of the fixed Atom feed:
   https://github.com/chrisi51/tesla-order-status/commits/main.atom
 
-Exitcodes:
-  0 -> alles aktuell
-  1 -> Repo hat neueren Commit (Update available)
-  2 -> Fehler (Feed laden oder keine gültigen Dateien)
+Exit codes:
+  0 -> everything up to date
+  1 -> Repo has newer commit (Update available)
+  2 -> Error (Feed loading or no valid files)
 """
 from __future__ import annotations
 from pathlib import Path
@@ -20,6 +20,8 @@ import xml.etree.ElementTree as ET
 from typing import List, Optional, Dict
 import requests
 import sys
+import shutil
+import tempfile
 
 # ---------------------------
 # Konfiguration: hier die Dateien eintragen (relative oder absolute Pfade)
@@ -34,6 +36,7 @@ FILES_TO_CHECK: List[str] = [
 ]
 
 FEED_URL = "https://github.com/chrisi51/tesla-order-status"
+ZIP_URL = f"{FEED_URL}/archive/refs/heads/main.zip"
 REQUEST_TIMEOUT = 10  # Sekunden
 
 # ---------------------------
@@ -46,10 +49,10 @@ def get_latest_updated_from_atom(url: str, timeout: int = REQUEST_TIMEOUT) -> da
     ns = {'atom': 'http://www.w3.org/2005/Atom'}
     entry = root.find('atom:entry', ns)
     if entry is None:
-        raise ValueError("Kein <entry> im Atom-Feed gefunden")
+        raise ValueError("No <entry> in Atom-Feed found")
     updated = entry.find('atom:updated', ns)
     if updated is None or not updated.text:
-        raise ValueError("Kein <updated>-Tag im ersten <entry> gefunden")
+        raise ValueError("No <updated> tag found in first <entry>")
     updated_text = updated.text.strip()
     # "2024-07-01T12:34:56Z" -> make ISO compatible with fromisoformat
     if updated_text.endswith('Z'):
@@ -62,7 +65,7 @@ def get_latest_updated_from_atom(url: str, timeout: int = REQUEST_TIMEOUT) -> da
     return dt
 
 def mtime_of_file(path: Path) -> Optional[datetime]:
-    """Gibt mtime als timezone-aware UTC datetime zurück oder None, wenn nicht existent / kein File."""
+    """Returns mtime as timezone-aware UTC datetime or None if non-existent / not a file."""
     try:
         if not path.exists():
             return None
@@ -81,6 +84,42 @@ def human_delta(a: datetime, b: datetime) -> str:
     mins = (secs % 3600) // 60
     return f"{days}d {hrs}h {mins}m"
 
+def download_and_extract_zip(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
+    """
+    Download and extract a zip archive to the current directory.
+    Existing files will be overwritten.
+    """
+    try:
+        resp = requests.get(url, timeout=timeout)
+        resp.raise_for_status()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            zip_path = Path(tmpdir) / "repo.zip"
+            with open(zip_path, "wb") as f:
+                f.write(resp.content)
+            shutil.unpack_archive(str(zip_path), tmpdir)
+            extracted_dir = next(p for p in Path(tmpdir).iterdir() if p.is_dir())
+            for item in extracted_dir.iterdir():
+                target = Path(".") / item.name
+                if item.is_dir():
+                    shutil.copytree(item, target, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(item, target)
+        print("[UPDATED] Files successfully downloaded and extracted.")
+        return True
+    except Exception as e:
+        print(f"[ERROR] Update failed: {e}")
+        return False
+
+
+def ask_for_update():
+    print(f"Download: {ZIP_URL}")
+    answer = input("Do you want to download and extract the update? (y/n): ").strip().lower()
+    if answer == "y":
+        if download_and_extract_zip():
+            return 0
+        return 1
+    return 1
+
 # ---------------------------
 # Main-Logic
 # ---------------------------
@@ -89,7 +128,7 @@ def main() -> int:
     try:
         last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/main.atom")
     except Exception as e:
-        print(f"[FEHLER] Atom-Feed konnte nicht geladen werden: {e}", file=sys.stderr)
+        print(f"[ERROR] Could not load Atom feed: {e}", file=sys.stderr)
         return 2
 
     errors = 0
@@ -110,13 +149,11 @@ def main() -> int:
 
     if not mtimes:
         errors += 1
-        print("[FEHLER] Keine gültigen Dateien in FILES_TO_CHECK gefunden.", file=sys.stderr)
-
+        print("[ERROR] No valid files found in FILES_TO_CHECK.", file=sys.stderr)
     if errors > 0:
         print("[PACKAGE CORRUPT]")
         print("Your Project is missing some files. Please download the complete project.")
-        print(f"Download: {FEED_URL}/archive/refs/heads/main.zip")
-        return 2
+        return ask_for_update()
 
     # Neuestes (jüngstes) mtime unter den angegebenen Dateien
     newest_path, newest_dt = max(mtimes.items(), key=lambda kv: kv[1])
@@ -124,8 +161,7 @@ def main() -> int:
     if last_commit_dt > newest_dt:
         print("[UPDATE AVAILABLE]")
         print(f"Last Update: {human_delta(last_commit_dt, newest_dt)} younger than your version =)")
-        print(f"Download: {FEED_URL}/archive/refs/heads/main.zip")
-        return 1
+        return ask_for_update()
     else:
         return 0
 
