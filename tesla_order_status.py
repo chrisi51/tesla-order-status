@@ -263,6 +263,8 @@ def display_orders(detailed_orders):
             print(f"{color_text('- Expected Registration Date:', '94')} {truncate_timestamp(registration_data.get('expectedRegDate', 'N/A'))}")
         if final_payment_data.get('etaToDeliveryCenter', {}):
             print(f"{color_text('- ETA To Delivery Center:', '94')} {truncate_timestamp(final_payment_data.get('etaToDeliveryCenter', 'N/A'))}")
+        if scheduling.get('deliveryAppointmentDate', {}):
+            print(f"{color_text('- Delivery Appointment Date:', '94')} {truncate_timestamp(scheduling.get('deliveryAppointmentDate', 'N/A'))}")
 
         print(f"\n{color_text('Vehicle Status:', '94')}")
         print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
@@ -402,6 +404,13 @@ detailed_new_orders = []
 for order in new_orders:
     order_id = order['referenceNumber']
     order_details = get_order_details(order_id, access_token)
+    
+    if not order_details or not order_details.get('tasks'):
+        print(color_text("\nError: Received empty response from Tesla API. Please try again later.", '91'))
+        if STATUS_MODE:
+            print("-1")
+        sys.exit(1)
+
     detailed_order = {
         'order': order,
         'details': order_details
