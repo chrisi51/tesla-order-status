@@ -175,10 +175,85 @@ def load_orders_from_file():
     return None
 
 
+def migrate_history_format(history):
+    """Convert history entries from the old string format to the new structured format."""
+    if not history or not history[0].get('changes'):
+        return history
+    # Check if migration is necessary (old format uses strings)
+    if isinstance(history[0]['changes'][0], dict):
+        return history
+    migrated = []
+    for entry in history:
+        new_entry = {'timestamp': entry.get('timestamp'), 'changes': []}
+        changes = entry.get('changes', [])
+        i = 0
+        while i < len(changes):
+            change = changes[i]
+            if change.startswith("+ Added key '"):
+                m = re.match(r"\+ Added key '([^']+)': (.*)", change)
+                if m:
+                    key = m.group(1).replace('Order ', '', 1)
+                    new_entry['changes'].append({
+                        'operation': 'added',
+                        'key': key,
+                        'value': m.group(2)
+                    })
+                i += 1
+            elif change.startswith("- Removed key '"):
+                m = re.match(r"- Removed key '([^']+)'", change)
+                if m:
+                    key = m.group(1).replace('Order ', '', 1)
+                    new_entry['changes'].append({
+                        'operation': 'removed',
+                        'key': key,
+                        'old_value': None
+                    })
+                i += 1
+            elif change.startswith("+ Added order "):
+                m = re.match(r"\+ Added order (\d+)", change)
+                if m:
+                    new_entry['changes'].append({
+                        'operation': 'added',
+                        'key': m.group(1)
+                    })
+                i += 1
+            elif change.startswith("- Removed order "):
+                m = re.match(r"- Removed order (\d+)", change)
+                if m:
+                    new_entry['changes'].append({
+                        'operation': 'removed',
+                        'key': m.group(1)
+                    })
+                i += 1
+            elif change.startswith('- '):
+                if i + 1 < len(changes) and changes[i + 1].startswith('+ '):
+                    m_old = re.match(r"- ([^:]+): (.*)", change)
+                    m_new = re.match(r"\+ ([^:]+): (.*)", changes[i + 1])
+                    if m_old and m_new and m_old.group(1) == m_new.group(1):
+                        key = m_old.group(1).replace('Order ', '', 1)
+                        new_entry['changes'].append({
+                            'operation': 'changed',
+                            'key': key,
+                            'old_value': m_old.group(2),
+                            'value': m_new.group(2)
+                        })
+                        i += 2
+                        continue
+                i += 1
+            else:
+                i += 1
+        migrated.append(new_entry)
+    return migrated
+
+
 def load_history_from_file():
     if os.path.exists(HISTORY_FILE):
         with open(HISTORY_FILE, 'r') as f:
-            return json.load(f)
+            history = json.load(f)
+        migrated = migrate_history_format(history)
+        if migrated != history:
+            save_history_to_file(migrated)
+        return migrated
     return []
 
 
@@ -187,24 +262,32 @@ def save_history_to_file(history):
         json.dump(history, f)
 
 
-def strip_color(text):
-    return re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
-
-
 def compare_dicts(old_dict, new_dict, path=''):
     differences = []
     for key in old_dict:
         if key not in new_dict:
-            differences.append(color_text(f"- Removed key '{path + key}'", '91'))
+            differences.append({
+                'operation': 'removed',
+                'key': path + key,
+                'old_value': old_dict[key]
+            })
         elif isinstance(old_dict[key], dict) and isinstance(new_dict[key], dict):
             differences.extend(compare_dicts(old_dict[key], new_dict[key], path + key + '.'))
         elif old_dict[key] != new_dict[key]:
-            differences.append(color_text(f"- {path + key}: {old_dict[key]}", '91'))
-            differences.append(color_text(f"+ {path + key}: {new_dict[key]}", '92'))
+            differences.append({
+                'operation': 'changed',
+                'key': path + key,
+                'old_value': old_dict[key],
+                'value': new_dict[key]
+            })
 
     for key in new_dict:
         if key not in old_dict:
-            differences.append(color_text(f"+ Added key '{path + key}': {new_dict[key]}", '92'))
+            differences.append({
+                'operation': 'added',
+                'key': path + key,
+                'value': new_dict[key]
+            })
 
     return differences
 
@@ -213,12 +296,66 @@ def compare_orders(old_orders, new_orders):
     differences = []
     for i, old_order in enumerate(old_orders):
         if i < len(new_orders):
-            differences.extend(compare_dicts(old_order, new_orders[i], path=f'Order {i}.'))
+            differences.extend(compare_dicts(old_order, new_orders[i], path=f'{i}.'))
         else:
-            differences.append(color_text(f"- Removed order {i}", '91'))
+            differences.append({'operation': 'removed', 'key': str(i)})
     for i in range(len(old_orders), len(new_orders)):
-        differences.append(color_text(f"+ Added order {i}", '92'))
+        differences.append({'operation': 'added', 'key': str(i)})
     return differences
+
+# Define translations for history keys
+HISTORY_TRANSLATIONS = {
+    'details.tasks.scheduling.deliveryWindowDisplay': 'Delivery Window',
+    'details.tasks.scheduling.deliveryAppointmentDate': 'Delivery Appointment',
+    'details.tasks.scheduling.deliveryAddressTitle': 'Delivery Center',
+    'details.tasks.finalPayment.data.etaToDeliveryCenter': 'ETA to Delivery Center',
+    'details.tasks.registration.orderDetails.vehicleRoutingLocation': 'Routing Location', 
+    'details.tasks.registration.expectedRegDate': 'Expected Registration Date',
+    'details.orderStatus': 'Order Status',
+    'details.tasks.registration.orderDetails.reservationDate': 'Reservation Date',
+    'details.tasks.registration.orderDetails.orderBookedDate': 'Order Booked Date',
+    'details.tasks.registration.orderDetails.vehicleOdometer': 'Vehicle Odometer',
+    'details.tasks.scheduling.apptDateTimeAddressStr': 'Delivery Details',
+    'order.modelCode': 'Model',
+    'order.mktOptions': 'Configuration'
+}
+
+def print_history(history):
+    if history:
+        print(color_text("\nChange History:", '94'))
+        for entry in history:
+            for change in entry['changes']:
+                if SHARE_MODE:
+                    key = change.get('key', '')
+                    # Extract just the path after removing order number prefix
+                    key_parts = key.split('.', 1)
+                    if len(key_parts) > 1:
+                        key = key_parts[1]
+                    if key not in HISTORY_TRANSLATIONS:
+                        continue
+                    else:
+                        change['key'] = HISTORY_TRANSLATIONS[key]
+                msg = format_history_entry(entry['timestamp'], change, entry['timestamp'] == TODAY)
+                print(msg)
+def format_history_entry(timestamp, entry, colored):
+    op = entry.get('operation')
+    key = entry.get('key')
+    if op == 'added':
+        if colored:
+            return color_text(f"{timestamp}: + {key}: {entry.get('value')}", '94')
+        else:
+            return f"{timestamp}: + {key}: {entry.get('value')}"
+    if op == 'removed':
+        if colored:
+            return color_text(f"{timestamp}: - {key}: {entry.get('old_value')}", '94')
+        else:
+            return f"{timestamp}: - {key}: {entry.get('old_value')}"
+    if op == 'changed':
+        if colored:
+            return f"{color_text(f'{timestamp}: ≠ {key}:', '94')} {color_text(entry.get('old_value'), '91')} {color_text('->', '94')} {color_text(entry.get('value'), '92')}"
+        else:
+            return f"{timestamp}: ≠ {key}: {entry.get('old_value')} -> {entry.get('value')}"
+    return f"{op} {key}"
 
 
 def truncate_timestamp(timestamp):
@@ -324,16 +461,7 @@ def display_orders(detailed_orders):
 
         print(f"{'-'*45}\n")
 
-    history = load_history_from_file()
-    if history:
-        print(color_text("\nChange History:", '94'))
-        for entry in history:
-            for change in entry['changes']:
-                msg = f"{entry['timestamp']}: {change}"
-                if entry['timestamp'] == TODAY:
-                    print(color_text(msg, '92'))
-                else:
-                    print(msg)
+    print_history(load_history_from_file())
 
     run_update_check()
 
@@ -426,7 +554,7 @@ if old_orders:
         history = load_history_from_file()
         history.append({
             'timestamp': TODAY,
-            'changes': [strip_color(d) for d in differences]
+            'changes': differences
         })
         save_history_to_file(history)
     else:

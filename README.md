@@ -39,7 +39,7 @@ python3 tesla_order_status.py --help
 #### Output Modes
 Only one of the options can be used at a time.
 - `--details` show additional information such as financing details.
-- `--share` hide personal data like order ID and VIN for sharing.
+- `--share` hide personal data like order ID and VIN for sharing. the history is reduced to date and status changes.
 - `--status` only report whether the order information has changed since the last run. no login happens, so tesla_tokens.json have to be present already. token will get refreshed if necessary.
   - 0 => no changes
   - 1 => changes detected
@@ -106,13 +106,13 @@ Financing Information:
 #### Change History
 ```
 Change History:
-2025-08-19: - Order 0.details.tasks.deliveryDetails.regData.regDetails.company.address.careOf: Maximilian Mustermann
-2025-08-19: + Order 0.details.tasks.deliveryDetails.regData.regDetails.company.address.careOf: Max Mustermann
-2025-08-19: - Order 0.details.tasks.deliveryDetails.regData.orderDetails.vin: None
-2025-08-19: + Order 0.details.tasks.deliveryDetails.regData.orderDetails.vin: 131232
-2025-08-19: + Added key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.userId': 10000000
-2025-08-19: - Removed key 'Order 0.details.tasks.deliveryDetails.regData.orderDetails.ritzbitz'
+2025-08-19: ≠ 0.details.tasks.deliveryDetails.regData.regDetails.company.address.careOf: Maximilian Mustermann -> Max Mustermann
+2025-08-19: ≠ 0.details.tasks.deliveryDetails.regData.orderDetails.vin: None -> 131232
+2025-08-19: + 0.details.tasks.deliveryDetails.regData.orderDetails.userId: 10000000
+2025-08-19: - 0.details.tasks.deliveryDetails.regData.orderDetails.ritzbitz
 ```
+In SHARED_MODE the change history is reduced to date and status changes.
+
 ## Disclaimer
 - the script is working on your host
 - no connection to me is done in any way at any time
