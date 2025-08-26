@@ -11,6 +11,12 @@ import urllib.parse
 import re
 import sys
 
+try:
+    import pyperclip
+    HAS_PYPERCLIP = True
+except ImportError:
+    HAS_PYPERCLIP = False
+
 from tesla_stores import TeslaStore
 from update_check import main as run_update_check
 
@@ -73,6 +79,9 @@ def color_text(text, color_code):
     if _USE_COLOR:
         return f"\033[{color_code}m{text}\033[0m"
     return text
+
+def strip_color(text):
+    return re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
 
 def generate_code_verifier_and_challenge():
     code_verifier = base64.urlsafe_b64encode(os.urandom(32)).rstrip(b'=').decode('utf-8')
@@ -367,6 +376,12 @@ def truncate_timestamp(timestamp):
     return timestamp
 
 def display_orders(detailed_orders):
+    # Capture output for clipboard if in SHARE_MODE
+    if SHARE_MODE and HAS_PYPERCLIP:
+        import io
+        original_stdout = sys.stdout
+        output_capture = io.StringIO()
+        sys.stdout = output_capture
     for detailed_order in detailed_orders:
         order = detailed_order['order']
         order_details = detailed_order['details']
@@ -375,7 +390,7 @@ def display_orders(detailed_orders):
         order_info = registration_data.get('orderDetails', {})
         final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
 
-        print(f"\n{'-'*45}")
+        print(f"{'-'*45}")
         print(f"{'ORDER INFORMATION':^45}")
         print(f"{'-'*45}")
 
@@ -465,7 +480,24 @@ def display_orders(detailed_orders):
 
     run_update_check()
 
-    print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+    if SHARE_MODE:
+        print(f"\n{color_text('Do you want to share your data and compete with others? Check out the script on GitHub:', '94')}")
+        print(f"{color_text('https://github.com/chrisi51/tesla-order-status', '94')}")
+        # Copy captured output to clipboard if in SHARE_MODE
+        if HAS_PYPERCLIP:
+            sys.stdout = original_stdout
+            captured_output = output_capture.getvalue()
+            output_capture.close()
+            print(captured_output, end='')
+            pyperclip.copy(strip_color(captured_output))
+            print(f"\n{color_text('Output has been copied to clipboard!', '94')}")
+        else:
+            print(f"\n{color_text('To automatically copy the text to your clipboard, see the installation guide for details:', '91')}")
+            print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
+
+    else:
+        print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+
 
 
  # Main script logic

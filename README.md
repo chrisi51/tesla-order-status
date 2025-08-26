@@ -11,10 +11,13 @@ To run the script, you need to install python3 for your operating system.
 https://www.python.org/downloads/
 
 ### General
-Then you need to install the `requests` library by running:
+Then you need to install the additional libraries by running:
 ```sh
-pip install requests
+pip install requests pyperclip
 ```
+
+- requests: for the api calls (required)
+- pyperclip: for copying content to the clipboard in sharing mode (optional)
 
 ### MacOS
 On MacOS it may be better to create a virtual environment:
@@ -24,7 +27,7 @@ python3 -m venv .venv
 # using the environment
 source .venv/bin/activate
 # installing dependency only in the environment instead of globally
-python3 -m pip install requests
+python3 -m pip install requests pyperclip
 ```
 
 ## Usage
