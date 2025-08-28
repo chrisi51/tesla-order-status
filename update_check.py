@@ -28,7 +28,7 @@ import tempfile
 # ---------------------------
 FILES_TO_CHECK: List[str] = [
     "tesla_order_status.py",
-    "tesla_stores.py",
+    "tesla_locations.json",
     "option-codes/000_teslahunt.json",
     "option-codes/050_directlease.json",
     "option-codes/100_chrisi51.json",

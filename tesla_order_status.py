@@ -17,7 +17,6 @@ try:
 except ImportError:
     HAS_PYPERCLIP = False
 
-from tesla_stores import TeslaStore
 from update_check import main as run_update_check
 
 # Define constants
@@ -37,6 +36,8 @@ OPTION_CODES = {}
 for path in sorted(glob("./option-codes/*.json")):
     with open(path, encoding="utf-8") as f:
         OPTION_CODES.update(json.load(f))  # last wins
+
+TESLA_STORES = json.load(open('tesla_locations.json'))
 
 parser = argparse.ArgumentParser(description="Retrieve Tesla order status.")
 group = parser.add_mutually_exclusive_group()
@@ -422,7 +423,22 @@ def display_orders(detailed_orders):
         print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
 
         print(f"\n{color_text('Delivery Information:', '94')}")
-        print(f"{color_text('- Routing Location:', '94')} {order_info.get('vehicleRoutingLocation', 'N/A')} ({TeslaStore(order_info.get('vehicleRoutingLocation', 0)).label})")
+        store = TESLA_STORES.get(order_info.get('vehicleRoutingLocation', ''), {})
+        if store:
+            print(f"{color_text('- Routing Location:', '94')} {store['display_name']} ({order_info.get('vehicleRoutingLocation', 'N/A')})")
+            if DETAILS_MODE:
+                store = TESLA_STORES.get(order_info.get('vehicleRoutingLocation', ''), {})
+                if store:
+                    address = store.get('address', {})
+                    print(f"{color_text('    Address:', '94')} {address.get('address_1', 'N/A')}")
+                    print(f"{color_text('    City:', '94')} {address.get('city', 'N/A')}")
+                    print(f"{color_text('    Postal Code:', '94')} {address.get('postal_code', 'N/A')}")
+                    if store.get('phone'):
+                        print(f"{color_text('    Phone:', '94')} {store['phone']}")
+                    if store.get('store_email'):
+                        print(f"{color_text('    Email:', '94')} {store['store_email']}")
+        else:
+            print(f"{color_text('- Routing Location:', '94')} N/A")
         print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
         print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
         print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
