@@ -37,7 +37,7 @@ for path in sorted(glob("./option-codes/*.json")):
     with open(path, encoding="utf-8") as f:
         OPTION_CODES.update(json.load(f))  # last wins
 
-TESLA_STORES = json.load(open('tesla_locations.json'))
+TESLA_STORES = json.load(open('tesla_locations.json', encoding="utf-8" ))
 
 parser = argparse.ArgumentParser(description="Retrieve Tesla order status.")
 group = parser.add_mutually_exclusive_group()
@@ -313,6 +313,19 @@ def compare_orders(old_orders, new_orders):
         differences.append({'operation': 'added', 'key': str(i)})
     return differences
 
+# uninteresting history entries
+HISTORY_TRANSLATIONS_IGNORED = {
+    'order.vin', # we use details.tasks.deliveryDetails.regData.orderDetails.vin
+    'details.tasks.registration.orderDetails.vin',
+    'details.tasks.registration.regData.orderDetails.vin',
+    'details.tasks.finalPayment.data.vin',
+    'details.strings.vin',
+    'details.tasks.tradeIn.isMatched',
+    'details.tasks.scheduling.card.messageBody',
+    'details.tasks.registration.isMatched',
+    'details.tasks.registration.orderDetails.vehicleModelYear'
+}
+
 # Define translations for history keys
 HISTORY_TRANSLATIONS = {
     'details.tasks.scheduling.deliveryWindowDisplay': 'Delivery Window',
@@ -330,21 +343,46 @@ HISTORY_TRANSLATIONS = {
     'order.mktOptions': 'Configuration'
 }
 
+HISTORY_TRANSLATIONS_DETAILS = {
+    **HISTORY_TRANSLATIONS,  # Include entries from HISTORY_TRANSLATIONS
+    'details.tasks.deliveryDetails.regData.orderDetails.vin': 'VIN',
+    'details.tasks.finalPayment.data.paymentDetails.amountPaid': 'Amount Paid',
+    'details.tasks.finalPayment.data.paymentDetails.paymentType': 'Payment Method',
+    'details.tasks.finalPayment.data.accountBalance': 'Account Balance', 
+    'details.tasks.finalPayment.data.amountDue': 'Amount Due',
+    'details.tasks.finalPayment.data.financingDetails.financialProductType': 'Finance Product',
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.financePartnerName': 'Finance Partner',
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.monthlyPayment': 'Monthly Payment',
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.termsInMonths': 'Term (months)',
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.interestRate': 'Interest Rate',
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.mileage': 'Range per Year',
+    'details.tasks.finalPayment.data.amountDueFinancier': 'Financed Amount',
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.approvedLoanAmount': 'Approved Amount'
+}
+
 def print_history(history):
     if history:
         print(color_text("\nChange History:", '94'))
         for entry in history:
             for change in entry['changes']:
-                if SHARE_MODE:
-                    key = change.get('key', '')
-                    # Extract just the path after removing order number prefix
-                    key_parts = key.split('.', 1)
-                    if len(key_parts) > 1:
-                        key = key_parts[1]
-                    if key not in HISTORY_TRANSLATIONS:
-                        continue
-                    else:
-                        change['key'] = HISTORY_TRANSLATIONS[key]
+                key = change.get('key', '')
+                # Extract just the path after removing order number prefix
+                key_parts = key.split('.', 1)
+                if len(key_parts) > 1:
+                    key = key_parts[1]
+
+                # skip if key is uninteresting
+                if key in HISTORY_TRANSLATIONS_IGNORED:
+                    continue
+                # translate if key is known
+                if key in HISTORY_TRANSLATIONS_DETAILS:
+                    change['key'] = HISTORY_TRANSLATIONS_DETAILS[key]
+                # dont print if in SHARE_MODE and not in HISTORY_TRANSLATIONS
+                if key not in HISTORY_TRANSLATIONS and SHARE_MODE:
+                    continue
+                # dont print if not in DETAILS MODE and not in HISTORY_TRANSLATIONS_DETAILS EXCEPT its a NEW Entry
+                if key not in HISTORY_TRANSLATIONS_DETAILS and not DETAILS_MODE and entry['timestamp'] != TODAY:
+                    continue
                 msg = format_history_entry(entry['timestamp'], change, entry['timestamp'] == TODAY)
                 print(msg)
 def format_history_entry(timestamp, entry, colored):
