@@ -33,6 +33,9 @@ def _safe_move_with_backup(src: Path, dst: Path, backup_dir: Path) -> None:
                 # dst ist neuer → src sichern
                 shutil.move(str(src), str(backup_dir / (src.name + ".old")))
         else:
+            if dst == "":
+                src.unlink()
+                return
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(src), str(dst))
     except FileNotFoundError:
@@ -53,6 +56,7 @@ def run() -> None:
         "tesla_order_history.json": PRIVATE_DIR / "tesla_order_history.json",
         "tesla_locations.json": PUBLIC_DIR / "tesla_locations.json",
         "option-codes": PUBLIC_DIR / "option-codes"
+        "update_check.py": ""
     }
 
     # Verzeichnisse sicherstellen

@@ -18,7 +18,10 @@ HISTORY_TRANSLATIONS_IGNORED = {
     'details.tasks.tradeIn.isMatched',
     'details.tasks.scheduling.card.messageBody',
     'details.tasks.registration.isMatched',
-    'details.tasks.registration.orderDetails.vehicleModelYear'
+    'details.tasks.registration.orderDetails.vehicleModelYear',
+    'details.state.vehicleImageCropParams.width',
+    'details.state.vehicleImageCropParams.x',
+    'details.state.vehicleImageCropParams.y'
 }
 
 # Define translations for history keys
