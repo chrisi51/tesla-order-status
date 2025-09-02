@@ -9,6 +9,7 @@ from app.config import APP_DIR, PRIVATE_DIR
 # -------------------------
 MIGRATIONS_DIR = APP_DIR / "migrations"
 MIGRATIONS_APPLIED_FILE = PRIVATE_DIR / "migrations_applied.json"
+PRIVATE_DIR.mkdir(parents=True, exist_ok=True)
 
 def _load_applied_migrations() -> List[str]:
     if MIGRATIONS_APPLIED_FILE.exists():
