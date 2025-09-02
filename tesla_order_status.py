@@ -13,11 +13,9 @@ from typing import Dict, Any, Optional, List
 from app.update_check import main as run_update_check
 from app.utils.migration import main as run_all_migrations
 
-run_update_check()
-
-
 # Run all migrations at startup
 run_all_migrations()
+run_update_check()
 
 
 

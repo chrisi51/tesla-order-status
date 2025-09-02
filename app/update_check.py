@@ -120,6 +120,8 @@ def download_and_extract_zip(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT)
                 else:
                     shutil.copy2(item, target)
         print("[UPDATED] Files successfully downloaded and extracted.")
+        print("Please restart the app.")
+        sys.exit()
         return True
     except Exception as e:
         print(f"[ERROR] Update failed: {e}")
