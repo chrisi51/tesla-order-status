@@ -22,6 +22,9 @@ def _safe_move_with_backup(src: Path, dst: Path, backup_dir: Path) -> None:
     """
     try:
         src_stat = src.stat()
+        if dst == "":
+            src.unlink()
+            return
         if dst.exists():
             dst_stat = dst.stat()
             backup_dir.mkdir(parents=True, exist_ok=True)
@@ -33,9 +36,6 @@ def _safe_move_with_backup(src: Path, dst: Path, backup_dir: Path) -> None:
                 # dst is newer → backup src
                 shutil.move(str(src), str(backup_dir / (src.name + ".old")))
         else:
-            if dst == "":
-                src.unlink()
-                return
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(src), str(dst))
     except FileNotFoundError:
