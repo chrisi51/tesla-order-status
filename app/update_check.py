@@ -23,32 +23,33 @@ import sys
 import shutil
 import tempfile
 
-from app.config import APP_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE
+from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE
 
 
 # ---------------------------
-# Konfiguration: hier die Dateien eintragen (relative oder absolute Pfade)
+# files to check
 # ---------------------------
-FILES_TO_CHECK: List[str] = [
-    "tesla_order_status.py",
+FILES_TO_CHECK: List[Path] = [
+    BASE_DIR / "tesla_order_status.py",
     TESLA_STORES_FILE,
-    "{OPTION_CODES_FOLDER}/000_teslahunt.json",
-    "{OPTION_CODES_FOLDER}/050_directlease.json",
-    "{OPTION_CODES_FOLDER}/100_chrisi51.json",
-    "{APP_DIR}/config.py"
-    "{APP_DIR}/update_check.py"
-    "{APP_DIR}/utils/auth.py"
-    "{APP_DIR}/utils/colors.py"
-    "{APP_DIR}/utils/connection.py"
-    "{APP_DIR}/utils/helpers.py"
-    "{APP_DIR}/utils/history.py"
-    "{APP_DIR}/utils/migration.py"
-    "{APP_DIR}/utils/orders.py"
-    "{APP_DIR}/utils/params.py"
-    "{APP_DIR}/utils/timeline.py"
-    "{APP_DIR}/migrations/2025-08-23-history.py"
-    "{APP_DIR}/migrations/2025-08-30-datafolders.py"
+    OPTION_CODES_FOLDER / "000_teslahunt.json",
+    OPTION_CODES_FOLDER / "050_directlease.json",
+    OPTION_CODES_FOLDER / "100_chrisi51.json",
+    APP_DIR / "config.py",
+    APP_DIR / "update_check.py",
+    APP_DIR / "utils" / "auth.py",
+    APP_DIR / "utils" / "colors.py",
+    APP_DIR / "utils" / "connection.py",
+    APP_DIR / "utils" / "helpers.py",
+    APP_DIR / "utils" / "history.py",
+    APP_DIR / "utils" / "migration.py",
+    APP_DIR / "utils" / "orders.py",
+    APP_DIR / "utils" / "params.py",
+    APP_DIR / "utils" / "timeline.py",
+    APP_DIR / "migrations" / "2025-08-23-history.py",
+    APP_DIR / "migrations" / "2025-08-30-datafolders.py",
 ]
+
 
 FEED_URL = "https://github.com/chrisi51/tesla-order-status"
 ZIP_URL = f"{FEED_URL}/archive/refs/heads/main.zip"
