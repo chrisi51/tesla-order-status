@@ -144,7 +144,7 @@ def ask_for_update():
 def main() -> int:
     # Lade Feed
     try:
-        last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/refactoring.atom")
+        last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/main.atom")
     except Exception as e:
         print(f"[ERROR] Could not load Atom feed: {e}", file=sys.stderr)
         return 2
