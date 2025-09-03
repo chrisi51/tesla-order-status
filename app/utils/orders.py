@@ -315,7 +315,7 @@ def main(access_token) -> None:
 
     if not STATUS_MODE:
         if SHARE_MODE:
-            display_orders_SHARE_MODE(cached_orders)
+            display_orders_SHARE_MODE(new_orders)
         else:
             display_orders(new_orders)
 
