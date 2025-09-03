@@ -19,9 +19,13 @@
     "PPSB": "Paint: Deep Blue Metallic",
     "PMNG": "Paint: Stealth Gray",
     "PMBL": "Paint: Solid Black",
+    "PN00": "Paint: Quicksilver",
+    "PN01": "Paint: Stealth Grey",
+    "PR01": "Paint: Ultra Red",
     "IPB0": "Interior: All Black",
     "IPB7": "Interior: Black",
-    "IPW8": "Interior: Black and White",
+    "IPW8": "Interior: White",
+    "IPB8": "Interior: Black",
     "STY5S": "Seating: 5 Seat Interior",
     "STY7S": "Seating: 7 Seat Interior",
     "WY19P": "19\" Crossflow wheels (Model Y Juniper)",
@@ -29,5 +33,6 @@
     "SC01": "Free Unlimited Supercharging",
     "SC04": "Pay-per-use Supercharging",
     "CPF0": "Standard Connectivity",
-    "CPF1": "Premium Connectivity"
+    "CPF1": "Premium Connectivity",
+    "TW01": "Tow Package"
 }
