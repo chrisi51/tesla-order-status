@@ -47,18 +47,21 @@ def compare_dicts(old_dict, new_dict, path=""):
         elif old_dict[key] != new_dict[key]:
             differences.append(
                 {
-                    "operation": "added",
-                    "key": path + key,
-                    "value": new_dict[key],
+                    'operation': 'changed',
+                    'key': path + key,
+                    'old_value': old_dict[key],
+                    'value': new_dict[key]
                 }
             )
 
     for key in new_dict:
         if key not in old_dict:
-            differences.append({
-                'operation': 'added',
-                'key': path + key,
-                'value': new_dict[key]
-            })
+            differences.append(
+                {
+                    'operation': 'added',
+                    'key': path + key,
+                    'value': new_dict[key]
+                }
+            )
 
     return differences
