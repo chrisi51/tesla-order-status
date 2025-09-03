@@ -57,6 +57,7 @@ def run() -> None:
         "tesla_locations.json": PUBLIC_DIR / "tesla_locations.json",
         "option-codes": PUBLIC_DIR / "option-codes",
         "update_check.py": ""
+        "tesla_stores.py": ""
     }
 
     for legacy_name, dst in legacy_map.items():
