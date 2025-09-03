@@ -56,7 +56,7 @@ def run() -> None:
         "tesla_order_history.json": PRIVATE_DIR / "tesla_order_history.json",
         "tesla_locations.json": PUBLIC_DIR / "tesla_locations.json",
         "option-codes": PUBLIC_DIR / "option-codes",
-        "update_check.py": ""
+        "update_check.py": "",
         "tesla_stores.py": ""
     }
 
