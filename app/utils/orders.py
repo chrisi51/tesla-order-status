@@ -257,7 +257,7 @@ def display_orders(detailed_orders):
 
 
     print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
-    print(f"\n{color_text('For sharing for example use the dedicated --share parameter.', '94')}")
+    print(f"{color_text('For sharing for example use the dedicated --share parameter.', '94')}")
 
 
 
