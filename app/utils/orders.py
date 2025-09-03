@@ -84,13 +84,71 @@ def get_order(order_id):
     orders = _load_orders_from_file()
     return orders.get(order_id)
 
-def display_orders(detailed_orders):
+def display_orders_SHARE_MODE(detailed_orders):
     # Capture output for clipboard if in SHARE_MODE
-    if SHARE_MODE and HAS_PYPERCLIP:
+    if HAS_PYPERCLIP:
         import io
         original_stdout = sys.stdout
         output_capture = io.StringIO()
         sys.stdout = output_capture
+
+    order_number = 0
+    for detailed_order in detailed_orders:
+        order = detailed_order['order']
+        order_details = detailed_order['details']
+        scheduling = order_details.get('tasks', {}).get('scheduling', {})
+        registration_data = order_details.get('tasks', {}).get('registration', {})
+        order_info = registration_data.get('orderDetails', {})
+        final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
+
+        decoded_options = decode_option_codes(order.get('mktOptions', ''))
+        if decoded_options:
+            print(f"\n{color_text('Order Details:', '94')}")
+            OPTIONS = {}
+            for code, description in decoded_options:
+                if 'Paint:' in description:
+                    value = description.replace('Paint:', '').replace('Metallic', '').replace('Multi-Coat','').strip()
+                    OPTIONS['Paint'] = value
+                if 'Interior:' in description:
+                    value = description.replace('Interior:', '').strip()
+                    OPTIONS['Interior'] = value
+                if 'Model' in description and len(description) > 10:
+                   # Extract model name and configuration suffix using regex
+                   # Model Y Long Range Dual Motor - AWD LR (Juniper) => Model Y - AWD LR
+                   match = re.match(r'(Model [YSX3]).*?((AWD|RWD) (LR|SR|P)).*?$', description)
+                   if match:
+                       model_name = match.group(1)
+                       config_suffix = match.group(2)
+                       value = f"{model_name} - {config_suffix}"
+                       OPTIONS['Model'] = value.strip()
+
+            msg=f"{OPTIONS['Model']} / {OPTIONS['Paint']} / {OPTIONS['Interior']}"
+            print(f"- {msg}")
+
+        if scheduling.get('deliveryAddressTitle'):
+            print(f"- {scheduling.get('deliveryAddressTitle')}")
+
+        print_timeline(order_number, detailed_order)
+
+        order_number += 1
+
+    print(f"\n{color_text('Do you want to share your data and compete with others?', '94')}")
+    print(f"{color_text('Check it out on GitHub: https://github.com/chrisi51/tesla-order-status', '94')}")
+    # Copy captured output to clipboard if in SHARE_MODE
+    if HAS_PYPERCLIP:
+        sys.stdout = original_stdout
+        captured_output = output_capture.getvalue()
+        output_capture.close()
+        print(captured_output, end='')
+        pyperclip.copy(strip_color(captured_output))
+        print(f"\n{color_text('Output has been copied to clipboard!', '94')}")
+    else:
+        print(f"\n{color_text('To automatically copy the text to your clipboard, see the installation guide for details:', '91')}")
+        print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
+
+
+
+def display_orders(detailed_orders):
     order_number = 0
     for detailed_order in detailed_orders:
         order = detailed_order['order']
@@ -105,12 +163,10 @@ def display_orders(detailed_orders):
         print(f"{'-'*45}")
 
         print(f"{color_text('Order Details:', '94')}")
-        if not SHARE_MODE:
-            print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
+        print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
         print(f"{color_text('- Status:', '94')} {order['orderStatus']}")
         print(f"{color_text('- Model:', '94')} {order['modelCode']}")
-        if not SHARE_MODE:
-            print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
+        print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
 
         decoded_options = decode_option_codes(order.get('mktOptions', ''))
         if decoded_options:
@@ -118,8 +174,10 @@ def display_orders(detailed_orders):
             for code, description in decoded_options:
                 print(f"{color_text(f'- {code}:', '94')} {description}")
 
-        print(f"\n{color_text('Vehicle Status:', '94')}")
-        print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
+
+        if order_info.get('vehicleOdometer') != 30:
+            print(f"\n{color_text('Vehicle Status:', '94')}")
+            print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
 
         print(f"\n{color_text('Delivery Information:', '94')}")
         store = TESLA_STORES.get(order_info.get('vehicleRoutingLocation', ''), {})
@@ -198,23 +256,8 @@ def display_orders(detailed_orders):
         order_number += 1
 
 
-    if SHARE_MODE:
-        print(f"\n{color_text('Do you want to share your data and compete with others? Check out the script on GitHub:', '94')}")
-        print(f"{color_text('https://github.com/chrisi51/tesla-order-status', '94')}")
-        # Copy captured output to clipboard if in SHARE_MODE
-        if HAS_PYPERCLIP:
-            sys.stdout = original_stdout
-            captured_output = output_capture.getvalue()
-            output_capture.close()
-            print(captured_output, end='')
-            pyperclip.copy(strip_color(captured_output))
-            print(f"\n{color_text('Output has been copied to clipboard!', '94')}")
-        else:
-            print(f"\n{color_text('To automatically copy the text to your clipboard, see the installation guide for details:', '91')}")
-            print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
-
-    else:
-        print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+    print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+    print(f"\n{color_text('For sharing for example use the dedicated --share parameter.', '94')}")
 
 
 
@@ -227,6 +270,8 @@ def main(access_token) -> None:
         if cached_orders:
             if STATUS_MODE:
                 print("0")
+            elif SHARE_MODE:
+                display_orders_SHARE_MODE(cached_orders)
             else:
                 display_orders(cached_orders)
         else:
@@ -269,5 +314,8 @@ def main(access_token) -> None:
                 _save_orders_to_file(new_orders)
 
     if not STATUS_MODE:
-        display_orders(new_orders)
+        if SHARE_MODE:
+            display_orders_SHARE_MODE(cached_orders)
+        else:
+            display_orders(new_orders)
 
