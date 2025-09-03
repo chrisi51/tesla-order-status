@@ -50,9 +50,9 @@ FILES_TO_CHECK: List[Path] = [
     APP_DIR / "migrations" / "2025-08-30-datafolders.py",
 ]
 
-
+BRANCH = "main"
 FEED_URL = "https://github.com/chrisi51/tesla-order-status"
-ZIP_URL = f"{FEED_URL}/archive/refs/heads/main.zip"
+ZIP_URL = f"{FEED_URL}/archive/refs/heads/{BRANCH}.zip"
 REQUEST_TIMEOUT = 10  # Sekunden
 
 # ---------------------------
@@ -144,7 +144,7 @@ def ask_for_update():
 def main() -> int:
     # Lade Feed
     try:
-        last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/main.atom")
+        last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/{BRANCH}.atom")
     except Exception as e:
         print(f"[ERROR] Could not load Atom feed: {e}", file=sys.stderr)
         return 2
