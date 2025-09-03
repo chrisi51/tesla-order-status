@@ -133,7 +133,15 @@ def format_history_entry(entry, colored):
             return f"{entry.get('timestamp')}: - {key}: {entry.get('old_value')}"
     if op == 'changed':
         if colored:
-            return f"{color_text(f'{entry.get('timestamp')}: ≠ {key}:', '94')} {color_text(entry.get('old_value'), '91')} {color_text('->', '94')} {color_text(entry.get('value'), '92')}"
+            timestamp = entry.get("timestamp")
+            old_value = entry.get("old_value")
+            new_value = entry.get("value")
+            return (
+                f"{color_text(f'{timestamp}: ≠ {key}:', '94')} "
+                f"{color_text(old_value, '91')} "
+                f"{color_text('->', '94')} "
+                f"{color_text(new_value, '92')}"
+            )
         else:
             return f"{entry.get('timestamp')}: ≠ {key}: {entry.get('old_value')} -> {entry.get('value')}"
     return f"{op} {key}"

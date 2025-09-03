@@ -9,7 +9,7 @@ IGNORED_KEYS = {
     'Routing Location',
     'Delivery Details',
     'Model',
-    'Configuration'
+    'Configuration',
     'Amount Paid',
     'Payment Method',
     'Finance Product',

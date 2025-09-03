@@ -41,7 +41,13 @@ def _get_auth_code(code_challenge: str):
 
     auth_url = f"{AUTH_URL}?{urllib.parse.urlencode(auth_params)}"
     print(color_text("To retrieve your order status, you need to authenticate with your Tesla account.", '93'))
-    print(f"{color_text('A browser window will open with the Tesla login page. After logging in you will likely see a', '93')} {color_text('\"Page Not Found\"', '91')} {color_text('page.', '93')} {color_text('That is CORRECT!', '91')}")
+    message_parts = [
+        color_text("A browser window will open with the Tesla login page. After logging in you will likely see a", 93),
+        color_text('"Page Not Found"', 91),
+        color_text("page.", 93),
+        color_text("That is CORRECT!", 91),
+    ]
+    print(" ".join(message_parts))
     print(color_text("Copy the full URL of that page and return here. The authentication happens only between you and Tesla; no data leaves your system.", '93'))
     if input(color_text("Proceed to open the login page? (y/n): ", '93')).lower() != 'y':
         print(color_text("Authentication cancelled.", '91'))

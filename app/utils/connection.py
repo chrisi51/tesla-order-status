@@ -1,4 +1,10 @@
+"""Utility helpers for HTTP requests with retry logic."""
+
+from typing import Dict
+import time
+
 import requests
+
 from app.utils.helpers import exit_with_status
 
 def request_with_retry(url, headers=None, data=None, max_retries=3):

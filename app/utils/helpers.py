@@ -5,13 +5,13 @@ from app.config import OPTION_CODES
 
 
 def exit_with_status(msg: str) -> None:
-    """In STATUS_MODE nur "-1" ausgeben, sonst Meldung ausgeben und Prozess beenden."""
+    """In STATUS_MODE print '-1', otherwise print message and exit."""
     if STATUS_MODE:
         print("-1")
         sys.exit(0)
-    else:
-        print(f"\n{color_text(msg, '91')}")
-        sys.exit(0)
+
+    print(f"\n{color_text(msg, '91')}")
+    sys.exit(0)
 
 
 def decode_option_codes(option_string: str):
@@ -21,7 +21,7 @@ def decode_option_codes(option_string: str):
 
 
 def get_date_from_timestamp(timestamp):
-    """Truncates timestamp to date only if SHARE_MODE is active."""
+    """Truncates timestamp to date."""
     if not timestamp or timestamp == 'N/A':
         return timestamp
     if 'T' in timestamp:
@@ -29,24 +29,29 @@ def get_date_from_timestamp(timestamp):
     return timestamp
 
 
-def compare_dicts(old_dict, new_dict, path=''):
+def compare_dicts(old_dict, new_dict, path=""):
     differences = []
     for key in old_dict:
         if key not in new_dict:
-            differences.append({
-                'operation': 'removed',
-                'key': path + key,
-                'old_value': old_dict[key]
-            })
+            differences.append(
+                {
+                    "operation": "removed",
+                    "key": path + key,
+                    "old_value": old_dict[key],
+                }
+            )
         elif isinstance(old_dict[key], dict) and isinstance(new_dict[key], dict):
-            differences.extend(compare_dicts(old_dict[key], new_dict[key], path + key + '.'))
+            differences.extend(
+                compare_dicts(old_dict[key], new_dict[key], path + key + ".")
+            )
         elif old_dict[key] != new_dict[key]:
-            differences.append({
-                'operation': 'changed',
-                'key': path + key,
-                'old_value': old_dict[key],
-                'value': new_dict[key]
-            })
+            differences.append(
+                {
+                    "operation": "added",
+                    "key": path + key,
+                    "value": new_dict[key],
+                }
+            )
 
     for key in new_dict:
         if key not in old_dict:
