@@ -23,20 +23,36 @@ import sys
 import shutil
 import tempfile
 
+from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE
+
+
 # ---------------------------
-# Konfiguration: hier die Dateien eintragen (relative oder absolute Pfade)
+# files to check
 # ---------------------------
-FILES_TO_CHECK: List[str] = [
-    "tesla_order_status.py",
-    "tesla_locations.json",
-    "option-codes/000_teslahunt.json",
-    "option-codes/050_directlease.json",
-    "option-codes/100_chrisi51.json",
-    "update_check.py"
+FILES_TO_CHECK: List[Path] = [
+    BASE_DIR / "tesla_order_status.py",
+    TESLA_STORES_FILE,
+    OPTION_CODES_FOLDER / "000_teslahunt.json",
+    OPTION_CODES_FOLDER / "050_directlease.json",
+    OPTION_CODES_FOLDER / "100_chrisi51.json",
+    APP_DIR / "config.py",
+    APP_DIR / "update_check.py",
+    APP_DIR / "utils" / "auth.py",
+    APP_DIR / "utils" / "colors.py",
+    APP_DIR / "utils" / "connection.py",
+    APP_DIR / "utils" / "helpers.py",
+    APP_DIR / "utils" / "history.py",
+    APP_DIR / "utils" / "migration.py",
+    APP_DIR / "utils" / "orders.py",
+    APP_DIR / "utils" / "params.py",
+    APP_DIR / "utils" / "timeline.py",
+    APP_DIR / "migrations" / "2025-08-23-history.py",
+    APP_DIR / "migrations" / "2025-08-30-datafolders.py",
 ]
 
+BRANCH = "main"
 FEED_URL = "https://github.com/chrisi51/tesla-order-status"
-ZIP_URL = f"{FEED_URL}/archive/refs/heads/main.zip"
+ZIP_URL = f"{FEED_URL}/archive/refs/heads/{BRANCH}.zip"
 REQUEST_TIMEOUT = 10  # Sekunden
 
 # ---------------------------
@@ -105,6 +121,8 @@ def download_and_extract_zip(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT)
                 else:
                     shutil.copy2(item, target)
         print("[UPDATED] Files successfully downloaded and extracted.")
+        print("Please restart the app.")
+        sys.exit()
         return True
     except Exception as e:
         print(f"[ERROR] Update failed: {e}")
@@ -126,7 +144,7 @@ def ask_for_update():
 def main() -> int:
     # Lade Feed
     try:
-        last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/main.atom")
+        last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/{BRANCH}.atom")
     except Exception as e:
         print(f"[ERROR] Could not load Atom feed: {e}", file=sys.stderr)
         return 2
