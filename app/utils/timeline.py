@@ -22,11 +22,14 @@ IGNORED_KEYS = {
     'Approved Amount'
 }
 
-def is_order_key_in_timeline(key, value, timeline):
+def is_order_key_in_timeline(timeline, key, value = "###"):
+
     for entry in timeline:
-        if entry.get('key') == key and entry.get('timestamp') == value:
+        if entry.get('key') == key:
+
             return True
     return False
+
 
 def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any]]:
     # history liefert bereits Einträge mit timestamp/key/value (übersetzbar in history.py)
@@ -91,11 +94,11 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
                 "value": "",
             }
         )
-        
+
     timeline_from_history = get_timeline_from_history(order_id, get_date_from_timestamp(order_info.get("reservationDate")))
 
     if scheduling.get('deliveryWindowDisplay'):
-        if not any(entry.get('key') == "Delivery Window" for entry in timeline_from_history):
+        if not is_order_key_in_timeline(timeline_from_history, 'Delivery Window'):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(order_info.get("orderBookedDate")),
@@ -106,7 +109,7 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
 
 
     if registration_data.get('expectedRegDate'):
-        if not is_order_key_in_timeline ('Expected Registration Date', registration_data.get('expectedRegDate'), timeline_from_history):
+        if not is_order_key_in_timeline(timeline_from_history, 'Expected Registration Date'):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(registration_data.get("expectedRegDate")),
@@ -116,7 +119,7 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
             )
         
     if final_payment_data.get('etaToDeliveryCenter'):
-        if not is_order_key_in_timeline ('ETA To Delivery Center', final_payment_data.get('etaToDeliveryCenter'), timeline_from_history):
+        if not is_order_key_in_timeline(timeline_from_history, 'ETA To Delivery Center'):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(final_payment_data.get("etaToDeliveryCenter")),
@@ -126,7 +129,7 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
             )
         
     if scheduling.get('deliveryAppointmentDate'):
-        if not is_order_key_in_timeline ('Delivery Appointment Date', scheduling.get("deliveryAppointmentDate"), timeline_from_history):
+        if not is_order_key_in_timeline(timeline_from_history, 'Delivery Appointment Date'):
             timeline.append({
                 "timestamp": get_date_from_timestamp(scheduling.get("deliveryAppointmentDate")),
                 "key": "Delivery Appointment Date",

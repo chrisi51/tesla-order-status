@@ -1,3 +1,4 @@
+import re
 import sys
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.colors import color_text, strip_color
@@ -24,7 +25,8 @@ def get_date_from_timestamp(timestamp):
     """Truncates timestamp to date."""
     if not timestamp or timestamp == 'N/A':
         return timestamp
-    if 'T' in timestamp:
+    timestamp_pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$'
+    if re.match(timestamp_pattern, timestamp):
         return timestamp.split('T')[0]
     return timestamp
 

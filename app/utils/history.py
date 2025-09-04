@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Callable
 
 from app.config import HISTORY_FILE, TODAY
 from app.utils.colors import color_text
+from app.utils.helpers import get_date_from_timestamp
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 
 
@@ -102,6 +103,11 @@ def get_history_of_order(order_id):
                 # dont print if not in DETAILS MODE and not in HISTORY_TRANSLATIONS_DETAILS EXCEPT its a NEW Entry
                 if key not in HISTORY_TRANSLATIONS_DETAILS and not DETAILS_MODE and entry['timestamp'] != TODAY:
                     continue
+
+                # Check and convert timestamps in value and old_value
+                for field in ['value', 'old_value']:
+                    if isinstance(change.get(field), str):
+                        change[field] = get_date_from_timestamp(change[field])
 
                 change['timestamp'] = entry['timestamp']
 
