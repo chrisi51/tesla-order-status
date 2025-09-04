@@ -132,15 +132,18 @@ def display_orders_SHARE_MODE(detailed_orders):
 
         order_number += 1
 
-    print(f"\n{color_text('Do you want to share your data and compete with others?', '94')}")
-    print(f"{color_text('Check it out on GitHub: https://github.com/chrisi51/tesla-order-status', '94')}")
+    # Create advertising text but don't print it
+    ad_text = (f"\n{strip_color('Do you want to share your data and compete with others?')}\n"
+               f"{strip_color('Check it out on GitHub: https://github.com/chrisi51/tesla-order-status')}")
+    
     # Copy captured output to clipboard if in SHARE_MODE
     if HAS_PYPERCLIP:
         sys.stdout = original_stdout
         captured_output = output_capture.getvalue()
         output_capture.close()
         print(captured_output, end='')
-        pyperclip.copy(strip_color(captured_output))
+        # Append ad text to captured output before copying to clipboard
+        pyperclip.copy(strip_color(captured_output) + ad_text)
         print(f"\n{color_text('Output has been copied to clipboard!', '94')}")
     else:
         print(f"\n{color_text('To automatically copy the text to your clipboard, see the installation guide for details:', '91')}")
