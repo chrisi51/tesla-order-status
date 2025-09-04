@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 from app.utils.history import get_history_of_order
-from app.utils.helpers import get_date_from_timestamp
+from app.utils.helpers import get_date_from_timestamp, normalize_str
 from app.utils.colors import color_text
 
 IGNORED_KEYS = {
@@ -25,8 +25,7 @@ IGNORED_KEYS = {
 def is_order_key_in_timeline(timeline, key, value = "###"):
 
     for entry in timeline:
-        if entry.get('key') == key:
-
+        if normalize_str(entry.get('key')) == normalize_str(key):
             return True
     return False
 
@@ -157,5 +156,5 @@ def print_timeline(order_id: int, detailed_order: Dict[str, Any]) -> None:
         msg = "".join(msg_parts)
         print(f"- {entry.get('timestamp')}: {msg}")
         if entry.get("key") not in printed_keys:
-            printed_keys[entry.get("key")] = 0
+            printed_keys[entry.get("key")] = 1
         printed_keys[entry.get("key")] += 1
