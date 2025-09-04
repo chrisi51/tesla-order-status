@@ -42,9 +42,14 @@ HISTORY_TRANSLATIONS = {
     'order.mktOptions': 'Configuration'
 }
 
-HISTORY_TRANSLATIONS_DETAILS = {
-    **HISTORY_TRANSLATIONS,  # Include entries from HISTORY_TRANSLATIONS
+HISTORY_TRANSLATIONS_ANONYMOUS = {
     'details.tasks.deliveryDetails.regData.orderDetails.vin': 'VIN',
+}
+
+
+HISTORY_TRANSLATIONS_DETAILS = {
+    **HISTORY_TRANSLATIONS,
+    **HISTORY_TRANSLATIONS_ANONYMOUS,
     'details.tasks.finalPayment.data.paymentDetails.amountPaid': 'Amount Paid',
     'details.tasks.finalPayment.data.paymentDetails.paymentType': 'Payment Method',
     'details.tasks.finalPayment.data.accountBalance': 'Account Balance',
@@ -90,16 +95,25 @@ def get_history_of_order(order_id):
                 if len(key_parts) > 1:
                     key = key_parts[1]
 
-
                 # skip if key is uninteresting
                 if key in HISTORY_TRANSLATIONS_IGNORED:
                     continue
+
                 # translate if key is known
                 if key in HISTORY_TRANSLATIONS_DETAILS:
                     change['key'] = HISTORY_TRANSLATIONS_DETAILS[key]
-                # dont print if in SHARE_MODE and not in HISTORY_TRANSLATIONS
-                if key not in HISTORY_TRANSLATIONS and SHARE_MODE:
-                    continue
+
+                if SHARE_MODE:
+                    # dont print if in SHARE_MODE and not in HISTORY_TRANSLATIONS
+                    if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
+                        continue
+
+                    # dont print if not in DETAILS MODE and not in HISTORY_TRANSLATIONS_DETAILS EXCEPT its a NEW Entry
+                    if key in HISTORY_TRANSLATIONS_ANONYMOUS:
+                        for field in ['value', 'old_value']:
+                            if isinstance(change.get(field), str):
+                                change[field] = None
+
                 # dont print if not in DETAILS MODE and not in HISTORY_TRANSLATIONS_DETAILS EXCEPT its a NEW Entry
                 if key not in HISTORY_TRANSLATIONS_DETAILS and not DETAILS_MODE and entry['timestamp'] != TODAY:
                     continue
