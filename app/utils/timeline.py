@@ -51,14 +51,15 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
             continue
 
         if entry["key"] == "Delivery Window" and first_delivery_window:
-            timeline.append(
-                {
-                   "timestamp": startdate,
-                   "key": "Delivery Window",
-                   "value": entry["old_value"],
-                }
-            )
-            first_delivery_window = False
+            if not entry["old_value"] in ['None', 'N/A', '']:
+                timeline.append(
+                    {
+                       "timestamp": startdate,
+                       "key": "Delivery Window",
+                       "value": entry["old_value"],
+                    }
+                )
+                first_delivery_window = False
 
         if entry["key"] in IGNORED_KEYS:
             continue
