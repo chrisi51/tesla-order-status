@@ -22,14 +22,15 @@ def ensure_telemetry_consent() -> None:
 
 def ask_for_telemetry_consent() -> None:
     answer = input(
-        "Do you allow collection of non-personalised usage data to improve the script? (y/n): "
+        "Do you allow collection of non-personalised usage data to improve the script (check the README.md for details)? (y/n): "
     ).strip().lower()
     consent = answer == "y"
     Config.set("telemetry-consent", consent)
     if answer == "y":
-        print(f"Telemetry enabled.")
+        print(f"Telemetry enabled. Thank you so much for your support, bro.")
     else:
-        print("Telemetry disabled. I may ask again later.")
+        print("Naww, I've counted on you! =( I may ask again later, OK? =) ")
+        input("Telemetry disabled. (ENTER): ")
 
 
 def track_usage(orders: List[dict]) -> None:
