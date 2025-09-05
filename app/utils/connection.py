@@ -1,9 +1,9 @@
 """Utility helpers for HTTP requests with retry logic."""
 
-from typing import Dict
+import json as jsonlib
 import time
-
 import requests
+from typing import Dict
 
 from app.utils.helpers import exit_with_status
 

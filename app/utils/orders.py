@@ -120,6 +120,8 @@ def display_orders_SHARE_MODE(detailed_orders):
         order_info = registration_data.get('orderDetails', {})
         final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
 
+        model = paint = interior = "unknown"
+
         decoded_options = decode_option_codes(order.get('mktOptions', ''))
         if decoded_options:
             print(f"\n{color_text('Order Details:', '94')}")
