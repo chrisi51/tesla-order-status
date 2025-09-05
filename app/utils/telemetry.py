@@ -6,11 +6,6 @@ from app.utils.helpers import pseudonymize_data
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.connection import request_with_retry
 
-
-
-
-
-
 def ensure_telemetry_consent() -> None:
     """Ask user for tracking consent if not already given."""
     if Config.has("telemetry-consent"):
@@ -18,7 +13,7 @@ def ensure_telemetry_consent() -> None:
             return
         else:
             counter = Config.get("telemetry-consent-counter", 10) - 1
-            if counter <= 0:
+            if counter <= 0 or counter >10:
                 counter = 10
                 ask_for_telemetry_consent()
             Config.set("telemetry-consent-counter", counter)
@@ -32,9 +27,9 @@ def ask_for_telemetry_consent() -> None:
     consent = answer == "y"
     Config.set("telemetry-consent", consent)
     if answer == "y":
-        print(f"Telemetrie aktiviert.")
+        print(f"Telemetry enabled.")
     else:
-        print("Telemetrie deaktiviert. Ich frage später erneut.")
+        print("Telemetry disabled. I may ask again later.")
 
 
 def track_usage(orders: List[dict]) -> None:
@@ -70,8 +65,6 @@ def track_usage(orders: List[dict]) -> None:
         "orders": user_orders,
         "params": params
     }
-
-    print(data)
 
     try:
         request_with_retry(TELEMETRIC_URL, json=data, max_retries=3)
