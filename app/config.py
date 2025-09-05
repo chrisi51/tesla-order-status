@@ -87,6 +87,6 @@ class Config:
 
     def delete(self, key: str) -> None:
         self._cfg.pop(key, None)
-
+        self.save()
 
 cfg = Config(SETTINGS_FILE)
