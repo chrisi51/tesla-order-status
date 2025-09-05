@@ -27,7 +27,7 @@ from app.utils.helpers import exit_with_status, decode_option_codes, get_date_fr
 from app.utils.history import print_history, load_history_from_file, save_history_to_file
 from app.utils.orders import main as run_orders
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
-from app.utils.telemetry import ensure_tracking_consent
+from app.utils.telemetry import ensure_telemetry_consent
 
 
 if not Config.has("secret"):
@@ -37,7 +37,7 @@ if not Config.has("fingerprint"):
     Config.set("fingerprint", generate_token(16,32))
 
 
-ensure_tracking_consent()
+ensure_telemetry_consent()
 access_token = run_tesla_auth()
 run_orders(access_token)
 

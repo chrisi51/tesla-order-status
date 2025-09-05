@@ -1,9 +1,8 @@
 import json
-import hashlib
-from typing import List
+from typing import List, Dict
 
-from app.config import SETTINGS_FILE, TELEMETRIC_URL, cfg as Config
-from app.utils.helpers import generate_token
+from app.config import TELEMETRIC_URL, cfg as Config
+from app.utils.helpers import pseudonymize_data
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.connection import request_with_retry
 
@@ -12,7 +11,7 @@ from app.utils.connection import request_with_retry
 
 
 
-def ensure_tracking_consent() -> None:
+def ensure_telemetry_consent() -> None:
     """Ask user for tracking consent if not already given."""
     if Config.has("telemetry-consent"):
         if Config.get("telemetry-consent"):
@@ -20,8 +19,13 @@ def ensure_tracking_consent() -> None:
         else:
             counter = Config.get("telemetry-consent-counter", 10) - 1
             if counter <= 0:
-                Config.set("telemetry-consent-counter", 10)
+                counter = 10
+                ask_for_telemetry_consent()
             Config.set("telemetry-consent-counter", counter)
+    else:
+        ask_for_telemetry_consent()
+
+def ask_for_telemetry_consent() -> None:
     answer = input(
         "Do you allow collection of non-personalised usage data to improve the script? (y/n): "
     ).strip().lower()
@@ -33,14 +37,18 @@ def ensure_tracking_consent() -> None:
         print("Telemetrie deaktiviert. Ich frage später erneut.")
 
 
-def track_usage(orders) -> None:
+def track_usage(orders: List[dict]) -> None:
     if not Config.get("telemetry-consent"):
         return
 
-    user_orders = {}
+    # avoid circular dependency with orders module
+    from app.utils.orders import get_model_from_order
+
+    user_orders: List[Dict[str, str]] = []
     for order in orders:
-        if order['order']['referenceNumber']:
-            order_id = pseudonymize_data(order['order']['referenceNumber'], 16)
+        ref = order.get("order", {}).get("referenceNumber")
+        if ref:
+            order_id = pseudonymize_data(ref, 16)
             model = get_model_from_order(order)
 
             user_orders.append(
@@ -56,12 +64,16 @@ def track_usage(orders) -> None:
         "status": STATUS_MODE,
         "cached": CACHED_MODE,
     }
-    param_str = json.dumps(params, sort_keys=True)
 
-    for order_id in order_ids:
-        hash_id = hashlib.sha256(order_id.encode("utf-8")).hexdigest()
-        data = {"id": Config.get("fingerprint"), "orders": user_orders, "params": param_str}
-        try:
-            request_with_retry(TELEMETRIC_URL, data=data, max_retries=1)
-        except Exception:
-            pass
+    data = {
+        "id": Config.get("fingerprint"),
+        "orders": user_orders,
+        "params": params
+    }
+
+    print(data)
+
+    try:
+        request_with_retry(TELEMETRIC_URL, json=data, max_retries=3)
+    except Exception:
+        pass

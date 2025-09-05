@@ -1,10 +1,12 @@
 import base64
+import hmac
+import hashlib
 import os
 import re
 import sys
 from datetime import datetime
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
-from app.utils.colors import color_text, strip_color
+from app.utils.colors import color_text
 from app.config import OPTION_CODES, cfg as Config
 
 

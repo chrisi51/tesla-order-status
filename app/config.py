@@ -60,7 +60,8 @@ class Config:
             with self._path.open(encoding="utf-8") as f:
                 self._cfg = json.load(f)
         except json.JSONDecodeError as e:
-            raise RuntimeError(f"Config kaputt: {e}") from e
+            self._cfg = {}
+            return
 
     def save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,6 +80,7 @@ class Config:
 
     def set(self, key: str, value: Any) -> None:
         self._cfg[key] = value
+        self.save()
 
     def has(self, key: str) -> bool:
         return key in self._cfg
