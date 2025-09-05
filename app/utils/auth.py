@@ -101,8 +101,7 @@ def _refresh_tokens(refresh_token):
 # ---------------------------
 # Main-Logic
 # ---------------------------
-def main() -> None:
-
+def main() -> str:
     code_verifier, code_challenge = _generate_code_verifier_and_challenge()
 
     if os.path.exists(TOKEN_FILE):

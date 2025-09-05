@@ -116,9 +116,33 @@ Change History:
 ```
 In SHARED_MODE the change history is reduced to date and status changes.
 
+## Telemetry
+
+To better understand how the tool is used and to improve future development, the script can optionally send **anonymous usage statistics**.  
+On the very first launch you will be asked for consent. If you decline, nothing is sent. Declining has no negative impact other than not contributing to usage statistics.
+
+### What information is sent?
+
+- a randomly generated fingerprint that identifies your installation (not tied to your identity)
+- for each tracked order: a pseudonymized order reference number and the associated Tesla model
+- which command line flags were used (e.g. `--details`, `--share`, `--status`, `--cached`)
+
+### How is your data protected?
+
+- **No personal data** such as VINs, names, email addresses, tokens, credentials or raw order IDs ever leave your machine.
+- Order IDs are **irreversibly pseudonymized** locally using a secret-based HMAC before transmission. Even if someone had access to the data, it cannot be reversed into the original ID.
+- The installation fingerprint is just a random string generated once on your system. It contains no information about your device or account.
+- All traffic is sent over encrypted HTTPS.
+- Data is used exclusively in aggregate to understand general usage patterns, not to track individual users.
+
+### Controlling telemetry
+
+You are always in control: telemetry is opt-in. Consent is requested on first run, and you can disable or revoke it at any time by editing the configuration file (`data/private/settings.json`) and setting `"telemetry-consent": false`.
+
+
 ## Disclaimer
 - the script is working on your host
-- no connection to me is done in any way at any time
+- - no connection to me is done in any way at any time unless you explicitly allow telemetry as described above
 - you need to login via browser and return the resulting url to the script to extract the login token which is used for tha api
 - the script just uses the token to work with for the moment
 - with your permission the script stores the token on your harddisk

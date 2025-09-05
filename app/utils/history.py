@@ -15,14 +15,15 @@ HISTORY_TRANSLATIONS_IGNORED = {
     'details.tasks.registration.orderDetails.vin',
     'details.tasks.registration.regData.orderDetails.vin',
     'details.tasks.finalPayment.data.vin',
-    'details.strings.vin',
     'details.tasks.tradeIn.isMatched',
     'details.tasks.scheduling.card.messageBody',
     'details.tasks.registration.isMatched',
     'details.tasks.registration.orderDetails.vehicleModelYear',
-    'details.state.vehicleImageCropParams.width',
-    'details.state.vehicleImageCropParams.x',
-    'details.state.vehicleImageCropParams.y'
+    'details.state.',
+    'details.strings.',
+    'details.scheduling.card.',
+    'details.scheduling.strings.',
+    'details.tasks.scheduling.isDeliveryEstimatesEnabled',
 }
 
 # Define translations for history keys
@@ -96,7 +97,7 @@ def get_history_of_order(order_id):
                     key = key_parts[1]
 
                 # skip if key is uninteresting
-                if key in HISTORY_TRANSLATIONS_IGNORED:
+                if any(key.startswith(pref) for pref in HISTORY_TRANSLATIONS_IGNORED):
                     continue
 
                 # translate if key is known

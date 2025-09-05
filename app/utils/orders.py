@@ -15,6 +15,7 @@ from app.utils.connection import request_with_retry
 from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
+from app.utils.telemetry import track_usage
 from app.utils.timeline import print_timeline
 
 
@@ -82,7 +83,25 @@ def _compare_orders(old_orders, new_orders):
 
 def get_order(order_id):
     orders = _load_orders_from_file()
+    if not isinstance(orders, dict):
+        return {}
     return orders.get(order_id)
+
+def get_model_from_order(detailed_order) -> str:
+    order = detailed_order['order']
+    decoded_options = decode_option_codes(order.get('mktOptions', ''))
+    if decoded_options:
+        for code, description in decoded_options:
+            if 'Model' in description and len(description) > 10:
+               # Extract model name and configuration suffix using regex
+               # Model Y Long Range Dual Motor - AWD LR (Juniper) => Model Y - AWD LR
+               match = re.match(r'(Model [YSX3]).*?((AWD|RWD) (LR|SR|P)).*?$', description)
+               if match:
+                   model_name = match.group(1)
+                   config_suffix = match.group(2)
+                   value = f"{model_name} - {config_suffix}"
+                   model = value.strip()
+                   return model
 
 def display_orders_SHARE_MODE(detailed_orders):
     # Capture output for clipboard if in SHARE_MODE
@@ -101,17 +120,18 @@ def display_orders_SHARE_MODE(detailed_orders):
         order_info = registration_data.get('orderDetails', {})
         final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
 
+        model = paint = interior = "unknown"
+
         decoded_options = decode_option_codes(order.get('mktOptions', ''))
         if decoded_options:
             print(f"\n{color_text('Order Details:', '94')}")
-            OPTIONS = {}
             for code, description in decoded_options:
                 if 'Paint:' in description:
                     value = description.replace('Paint:', '').replace('Metallic', '').replace('Multi-Coat','').strip()
-                    OPTIONS['Paint'] = value
+                    paint = value
                 if 'Interior:' in description:
                     value = description.replace('Interior:', '').strip()
-                    OPTIONS['Interior'] = value
+                    interior = value
                 if 'Model' in description and len(description) > 10:
                    # Extract model name and configuration suffix using regex
                    # Model Y Long Range Dual Motor - AWD LR (Juniper) => Model Y - AWD LR
@@ -120,10 +140,11 @@ def display_orders_SHARE_MODE(detailed_orders):
                        model_name = match.group(1)
                        config_suffix = match.group(2)
                        value = f"{model_name} - {config_suffix}"
-                       OPTIONS['Model'] = value.strip()
+                       model = value.strip()
 
-            msg=f"{OPTIONS['Model']} / {OPTIONS['Paint']} / {OPTIONS['Interior']}"
-            print(f"- {msg}")
+            if model and paint and interior:
+                msg = f"{model} / {paint} / {interior}"
+                print(f"- {msg}")
 
         if scheduling.get('deliveryAddressTitle'):
             print(f"- {scheduling.get('deliveryAddressTitle')}")
@@ -268,15 +289,17 @@ def display_orders(detailed_orders):
 # Main-Logic
 # ---------------------------
 def main(access_token) -> None:
+    old_orders = _load_orders_from_file()
+    track_usage(old_orders)
+
     if CACHED_MODE:
-        cached_orders = _load_orders_from_file()
-        if cached_orders:
+        if old_orders:
             if STATUS_MODE:
                 print("0")
             elif SHARE_MODE:
-                display_orders_SHARE_MODE(cached_orders)
+                display_orders_SHARE_MODE(old_orders)
             else:
-                display_orders(cached_orders)
+                display_orders(old_orders)
         else:
             if STATUS_MODE:
                 print("-1")
@@ -288,7 +311,6 @@ def main(access_token) -> None:
         print(color_text("\n> Start retrieving the information. Please be patient...\n", '94'))
 
 
-    old_orders = _load_orders_from_file()
     new_orders = _get_all_orders(access_token)
 
 

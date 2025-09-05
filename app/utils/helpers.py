@@ -1,9 +1,13 @@
+import base64
+import hmac
+import hashlib
+import os
 import re
 import sys
 from datetime import datetime
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
-from app.utils.colors import color_text, strip_color
-from app.config import OPTION_CODES
+from app.utils.colors import color_text
+from app.config import OPTION_CODES, cfg as Config
 
 
 def exit_with_status(msg: str) -> None:
@@ -94,3 +98,21 @@ def compare_dicts(old_dict, new_dict, path=""):
             )
 
     return differences
+
+
+def _b32(data: bytes, length: int | None = None) -> str:
+    s = base64.b32encode(data).decode("ascii").rstrip("=")
+    return s if length is None else s[:length]
+
+def _b32decode_nopad(s: str) -> bytes:
+    pad = "=" * ((8 - (len(s) % 8)) % 8)
+    return base64.b32decode(s + pad)
+
+def generate_token(bytes_len: int, token_length: int | None = None) -> str:
+    return _b32(os.urandom(bytes_len), token_length)
+
+def pseudonymize_data(data: str, length: int) -> str:
+    secret_b32 = Config.get("secret")
+    secret = _b32decode_nopad(secret_b32)
+    digest = hmac.new(secret, data.encode("utf-8"), hashlib.sha256).digest()
+    return _b32(digest, length)
