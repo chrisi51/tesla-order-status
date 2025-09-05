@@ -3,3 +3,5 @@
 .venv
 *.bak
 data/private
+php/
+Chrome Extensions/
