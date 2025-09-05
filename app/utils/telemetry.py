@@ -39,19 +39,22 @@ def track_usage(orders: List[dict]) -> None:
     # avoid circular dependency with orders module
     from app.utils.orders import get_model_from_order
 
-    user_orders: List[Dict[str, str]] = []
-    for order in orders:
-        ref = order.get("order", {}).get("referenceNumber")
-        if ref:
-            order_id = pseudonymize_data(ref, 16)
-            model = get_model_from_order(order)
+    if not orders:
+        user_orders = []
+    else:
+        user_orders: List[Dict[str, str]] = []
+        for order in orders:
+            ref = order.get("order", {}).get("referenceNumber")
+            if ref:
+                order_id = pseudonymize_data(ref, 16)
+                model = get_model_from_order(order)
 
-            user_orders.append(
-                {
-                    "order_id": order_id,
-                    "model": model
-                }
-            )
+                user_orders.append(
+                    {
+                        "order_id": order_id,
+                        "model": model
+                    }
+                )
 
     params = {
         "details": DETAILS_MODE,
