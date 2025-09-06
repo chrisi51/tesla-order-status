@@ -124,7 +124,7 @@ def display_orders_SHARE_MODE(detailed_orders):
 
         decoded_options = decode_option_codes(order.get('mktOptions', ''))
         if decoded_options:
-            print(f"\n{color_text('Order Details:', '94')}")
+            print(f"---\n{color_text('Order Details:', '94')}")
             for code, description in decoded_options:
                 if 'Paint:' in description:
                     value = description.replace('Paint:', '').replace('Metallic', '').replace('Multi-Coat','').strip()
@@ -164,7 +164,7 @@ def display_orders_SHARE_MODE(detailed_orders):
         output_capture.close()
         print(captured_output, end='')
         # Append ad text to captured output before copying to clipboard
-        pyperclip.copy(strip_color(captured_output) + ad_text)
+        pyperclip.copy("```\n" + strip_color(captured_output) + ad_text + "\n```")
         print(f"\n{color_text('Output has been copied to clipboard!', '94')}")
     else:
         print(f"\n{color_text('To automatically copy the text to your clipboard, see the installation guide for details:', '91')}")

@@ -5,6 +5,7 @@ import os
 import re
 import sys
 from datetime import datetime
+from typing import Optional
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.colors import color_text
 from app.config import OPTION_CODES, cfg as Config
@@ -100,7 +101,7 @@ def compare_dicts(old_dict, new_dict, path=""):
     return differences
 
 
-def _b32(data: bytes, length: int | None = None) -> str:
+def _b32(data: bytes, length: Optional[int] = None) -> str:
     s = base64.b32encode(data).decode("ascii").rstrip("=")
     return s if length is None else s[:length]
 
@@ -108,7 +109,7 @@ def _b32decode_nopad(s: str) -> bytes:
     pad = "=" * ((8 - (len(s) % 8)) % 8)
     return base64.b32decode(s + pad)
 
-def generate_token(bytes_len: int, token_length: int | None = None) -> str:
+def generate_token(bytes_len: int, token_length: Optional[int] = None) -> str:
     return _b32(os.urandom(bytes_len), token_length)
 
 def pseudonymize_data(data: str, length: int) -> str:

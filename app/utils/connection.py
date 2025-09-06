@@ -3,14 +3,14 @@
 import json as jsonlib
 import time
 import requests
-from typing import Dict
+from typing import Dict, Union
 
 from app.utils.helpers import exit_with_status
 
 def request_with_retry(url, headers=None, data=None, json=None, max_retries=3):
     """Perform a GET or POST request with exponential backoff retries."""
 
-    _STATUS_TEXTS: Dict[int | str, str] = {
+    _STATUS_TEXTS: Dict[Union[int, str], str] = {
         400: "Invalid request (400): Please check parameters.",
         401: "Unauthorized (401): Token/login seems incorrect.",
         403: "Forbidden (403): Data not accessible. Try again later.",
