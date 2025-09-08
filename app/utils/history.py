@@ -29,7 +29,7 @@ HISTORY_TRANSLATIONS_IGNORED = {
 # Define translations for history keys
 HISTORY_TRANSLATIONS = {
     'details.tasks.scheduling.deliveryWindowDisplay': 'Delivery Window',
-    'details.tasks.scheduling.deliveryAppointmentDate': 'Delivery Appointment',
+    'details.tasks.scheduling.deliveryAppointmentDate': 'Delivery Appointment Date',
     'details.tasks.scheduling.deliveryAddressTitle': 'Delivery Center',
     'details.tasks.finalPayment.data.etaToDeliveryCenter': 'ETA to Delivery Center',
     'details.tasks.registration.orderDetails.vehicleRoutingLocation': 'Routing Location',
