@@ -139,14 +139,18 @@ def perform_update(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
 
 
 def ask_for_update():
-
     if Config.get("update_method") == "automatically":
         perform_update()
     else:
         if not STATUS_MODE:
             answer = input("Do you want to download and extract the update? (y/n): ").strip().lower()
             if answer == "y":
-                return perform_update()
+                if perform_update():
+                    return 0
+                else:
+                    return 2
+            else
+                return 1
         else:
             print(2)
             sys.exit()
