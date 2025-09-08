@@ -1,6 +1,6 @@
 from glob import glob
 import json
-import os
+import re
 import time
 from pathlib import Path
 from typing import Dict, Any, Optional, List
@@ -46,6 +46,7 @@ for p in sorted(glob(f"{OPTION_CODES_FOLDER}/*.json")):
     except Exception:
         continue
 
+
 class Config:
     def __init__(self, path: Path):
         self._path = path
@@ -58,7 +59,10 @@ class Config:
             return
         try:
             with self._path.open(encoding="utf-8") as f:
-                self._cfg = json.load(f)
+                text = f.read()
+                # remove trailing commas before } or ]
+                text = re.sub(r",\s*([\]\}])", r"\1", text)
+                self._cfg = json.loads(text)
         except json.JSONDecodeError as e:
             self._cfg = {}
             return

@@ -46,12 +46,17 @@ Only one of the options can be used at a time.
 - `--status` only report whether the order information has changed since the last run. no login happens, so tesla_tokens.json have to be present already. token will get refreshed if necessary.
   - 0 => no changes
   - 1 => changes detected
+  - 2 => pending updates
   - -1 => error ... you better run the script once without any params to make sure, it is working. Possibly the api token is invalid or there is no tesla_orders.json already
 #### Work Modes
 can be combined with Output Modes
   - `--cached` use locally cached order data without performing any API requests. Useful combined with `--share` to get a share friendly output without polling API again.
 
 ## Configuration
+### General Settings
+The script stores the configuration in `data/private/settings.json`. You can change the settings on your own risk.
+If the config becomes invalid, it will be reset to the default values.
+### Option Codes
 In the folder `option-codes` all known tesla option codes are stored. You can put in your own json files to extend the list. Files get loaded in alphabetic order and last occurence of any option codes win.
 
 ## History
@@ -86,13 +91,6 @@ Configuration Options:
 - STY5S: Seating: 5 Seat Interior
 - WY19P: 19" Crossflow wheels (Model Y Juniper)
 
-Reservation Details:
-- Reservation Date: 2025-08-07T12:00:00.000000
-- Order Booked Date: 2025-08-07T12:00:00.000000
-
-Vehicle Status:
-- Vehicle Odometer: 30 KM
-
 Delivery Information:
 - Routing Location: None (N/A)
 - Delivery Center: Tesla Delivery & Used Car Center Hanau Holzpark
@@ -101,10 +99,25 @@ Delivery Information:
 - Delivery Appointment: None
 
 Financing Information:
+- Finance Product: OPERATIONAL_LEASE
 - Finance Partner: Santander Consumer Leasing GmbH
+- Monthly Payment: 683.35
+- Term (months): 48
+- Interest Rate: 6.95 %
+- Range per Year: 10000
+- Financed Amount: 60270
+- Approved Amount: 60270
 ---------------------------------------------
 ```
 
+#### Timeline
+```
+Order Timeline:
+- 2025-08-07: Reservation
+- 2025-08-07: Order Booked
+- 2025-08-07: Delivery Window: 6 September - 30 September
+- 2025-08-23: new Delivery Window: 10 September - 30 September
+```
 
 #### Change History
 ```
@@ -114,7 +127,20 @@ Change History:
 2025-08-19: + 0.details.tasks.deliveryDetails.regData.orderDetails.userId: 10000000
 2025-08-19: - 0.details.tasks.deliveryDetails.regData.orderDetails.ritzbitz
 ```
-In SHARED_MODE the change history is reduced to date and status changes.
+
+#### In SHARED_MODE (`--share`) you get a very compact output:
+```
+---
+Order Details:
+- Model Y - AWD LR / Deep Blue / White
+- Tesla Delivery & Used Car Center Hanau Holzpark
+
+Order Timeline:
+- 2025-08-07: Reservation
+- 2025-08-07: Order Booked
+- 2025-08-07: Delivery Window: 6 September - 30 September
+- 2025-08-23: new Delivery Window: 10 September - 30 September
+```
 
 ## Telemetry
 

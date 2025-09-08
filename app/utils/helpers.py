@@ -2,11 +2,10 @@ import base64
 import hmac
 import hashlib
 import os
-import re
 import sys
 from datetime import datetime
 from typing import Optional
-from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
+from app.utils.params import STATUS_MODE
 from app.utils.colors import color_text
 from app.config import OPTION_CODES, cfg as Config
 
@@ -15,15 +14,20 @@ def exit_with_status(msg: str) -> None:
     """In STATUS_MODE print '-1', otherwise print message and exit."""
     if STATUS_MODE:
         print("-1")
-        sys.exit(0)
-
-    print(f"\n{color_text(msg, '91')}")
-    sys.exit(0)
+    else:
+        print(f"\n{color_text(msg, '91')}")
+    sys.exit(1)
 
 
 def decode_option_codes(option_string: str):
     """Return a list of tuples with (code, description)."""
-    codes = sorted(c.strip() for c in option_string.split(',') if c.strip())
+    if not option_string:
+        return []
+
+    codes = sorted(
+        c.strip().upper() for c in option_string.split(',') if c.strip()
+    )
+
     return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
 
 
@@ -63,6 +67,9 @@ def normalize_str(key: str) -> str:
     return collapsed.lower()
 
 
+def clean_str(value):
+    return value.strip() if isinstance(value, str) else value
+
 def compare_dicts(old_dict, new_dict, path=""):
     differences = []
     for key in old_dict:
@@ -71,20 +78,23 @@ def compare_dicts(old_dict, new_dict, path=""):
                 {
                     "operation": "removed",
                     "key": path + key,
-                    "old_value": old_dict[key],
+                    "old_value": clean_str(old_dict[key])
                 }
             )
         elif isinstance(old_dict[key], dict) and isinstance(new_dict[key], dict):
             differences.extend(
                 compare_dicts(old_dict[key], new_dict[key], path + key + ".")
             )
-        elif old_dict[key] != new_dict[key]:
-            differences.append(
+        else:
+            old_value = clean_str(old_dict[key])
+            new_value = clean_str(new_dict[key])
+            if old_value != new_value:
+                differences.append(
                 {
                     'operation': 'changed',
                     'key': path + key,
-                    'old_value': old_dict[key],
-                    'value': new_dict[key]
+                    'old_value': old_value,
+                    'value': new_value
                 }
             )
 
@@ -94,7 +104,7 @@ def compare_dicts(old_dict, new_dict, path=""):
                 {
                     'operation': 'added',
                     'key': path + key,
-                    'value': new_dict[key]
+                    'value': clean_str(new_dict[key])
                 }
             )
 
@@ -114,6 +124,9 @@ def generate_token(bytes_len: int, token_length: Optional[int] = None) -> str:
 
 def pseudonymize_data(data: str, length: int) -> str:
     secret_b32 = Config.get("secret")
+    if not secret_b32:
+        secret_b32 = generate_token(32)
+        Config.set("secret", secret_b32)
     secret = _b32decode_nopad(secret_b32)
     digest = hmac.new(secret, data.encode("utf-8"), hashlib.sha256).digest()
     return _b32(digest, length)

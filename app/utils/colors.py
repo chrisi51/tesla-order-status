@@ -29,6 +29,4 @@ def color_text(text, color_code):
 
 
 def strip_color(text):
-    if _USE_COLOR:
-        return re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
-    return text
+    return re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
