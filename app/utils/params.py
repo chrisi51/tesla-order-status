@@ -7,7 +7,7 @@ group.add_argument("--share", action="store_true", help="Hide personal data like
 group.add_argument("--status", action="store_true", help="Only report whether there are changes since the last check.")
 parser.add_argument("--cached", action="store_true", help="Use locally cached data without contacting the API.")
 
-_args = parser.parse_args()
+_args, _ = parser.parse_known_args()
 
 DETAILS_MODE = _args.details
 SHARE_MODE = _args.share

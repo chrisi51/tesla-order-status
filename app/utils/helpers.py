@@ -16,7 +16,7 @@ def exit_with_status(msg: str) -> None:
         print("-1")
     else:
         print(f"\n{color_text(msg, '91')}")
-    sys.exit(0)
+    sys.exit(1)
 
 
 def decode_option_codes(option_string: str):
