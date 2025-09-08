@@ -19,11 +19,14 @@ from datetime import datetime, timezone
 import xml.etree.ElementTree as ET
 from typing import List, Optional, Dict
 import requests
+import os
 import sys
 import shutil
 import tempfile
 
-from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE
+from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE, cfg as Config
+from app.utils.params import STATUS_MODE
+from app.utils.colors import color_text
 
 
 # ---------------------------
@@ -45,12 +48,13 @@ FILES_TO_CHECK: List[Path] = [
     APP_DIR / "utils" / "migration.py",
     APP_DIR / "utils" / "orders.py",
     APP_DIR / "utils" / "params.py",
+    APP_DIR / "utils" / "telemetry.py",
     APP_DIR / "utils" / "timeline.py",
     APP_DIR / "migrations" / "2025-08-23-history.py",
     APP_DIR / "migrations" / "2025-08-30-datafolders.py",
 ]
 
-BRANCH = "main"
+BRANCH = "update"
 FEED_URL = "https://github.com/chrisi51/tesla-order-status"
 ZIP_URL = f"{FEED_URL}/archive/refs/heads/{BRANCH}.zip"
 REQUEST_TIMEOUT = 10  # Sekunden
@@ -100,7 +104,7 @@ def human_delta(a: datetime, b: datetime) -> str:
     mins = (secs % 3600) // 60
     return f"{days}d {hrs}h {mins}m"
 
-def download_and_extract_zip(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
+def perform_update(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
     """
     Download and extract a zip archive to the current directory.
     Existing files will be overwritten.
@@ -120,36 +124,73 @@ def download_and_extract_zip(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT)
                     shutil.copytree(item, target, dirs_exist_ok=True)
                 else:
                     shutil.copy2(item, target)
-        print("[UPDATED] Files successfully downloaded and extracted.")
-        print("Please restart the app.")
-        return True
     except Exception as e:
-        print(f"[ERROR] Update failed: {e}")
+        exit_with_status("[ERROR] Update failed: {e}")
         return False
+
+    if not STATUS_MODE:
+        print("[UPDATED] Files successfully downloaded and extracted.")
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+    else:
+        print(0)
+        sys.exit()
+
+    return True
 
 
 def ask_for_update():
-    print(f"Download: {ZIP_URL}")
-    answer = input("Do you want to download and extract the update? (y/n): ").strip().lower()
-    if answer == "y":
-        if download_and_extract_zip():
+
+    if Config.get("update_method") == "automatically":
+        perform_update()
+    else:
+        if not STATUS_MODE:
+            answer = input("Do you want to download and extract the update? (y/n): ").strip().lower()
+            if answer == "y":
+                return perform_update()
+        else:
+            print(2)
             sys.exit()
-        return 1
-    return 1
+
+
+def ask_for_update_consent():
+    print(color_text("New Feature: Update Settings", '93'))
+    print(color_text("Please select how you want to handle updates:", 93)),
+    print(color_text("- [m]anual updates: You will be asked to confirm each update, as it was before.", 93)),
+    print(color_text("- [a]utomatic updates: Updates will be installed automatically", 93)),
+    print(color_text("- [b]lock updates: Updates will be disabled completely", 93)),
+    print(color_text("You can change your mind everytime by removing 'update_method' from your 'data/private/settings.json':", 93)),
+    consent = input("Please choose an option (m/a/b): ").strip().lower()
+
+    if consent == "b":
+        Config.set("update_method", "block")
+    elif consent == "a":
+        Config.set("update_method", "automatically")
+    else:
+        Config.set("update_method", "manual")
 
 # ---------------------------
 # Main-Logic
 # ---------------------------
 def main() -> int:
+
+    if not Config.has("update_method") or Config.get("update_method") == "":
+        ask_for_update_consent()
+
+    if Config.get("update_method") == "block":
+        return
     # Lade Feed
     try:
         last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/{BRANCH}.atom")
     except Exception as e:
-        print(f"[ERROR] Could not load Atom feed: {e}", file=sys.stderr)
+        if not STATUS_MODE:
+            print(f"[ERROR] Could not load Atom feed for update check: {e}", file=sys.stderr)
+        else:
+            print(-1)
+            sys.exit()
         return 2
 
     errors = 0
-    # Prüfe die festgelegten Dateien (keine Ordner-Recursion)
+    # Check the files
     mtimes: Dict[str, datetime] = {}
     for p in FILES_TO_CHECK:
         path = Path(p)
@@ -157,30 +198,38 @@ def main() -> int:
         if m is None:
             if not path.exists():
                 errors += 1
-                print(f"[WARN] File missing: {p}")
+                if not STATUS_MODE:
+                    print(f"[WARN] File missing: {p}")
             else:
                 errors += 1
-                print(f"[WARN] Path is not a file and could not get read: {p} ")
+                if not STATUS_MODE:
+                    print(f"[WARN] Path is not a file and could not get read: {p} ")
             continue
         mtimes[p] = m
 
     if not mtimes:
         errors += 1
-        print("[ERROR] No valid files found in FILES_TO_CHECK.", file=sys.stderr)
+        if not STATUS_MODE:
+            print("[ERROR] No valid files found in FILES_TO_CHECK.", file=sys.stderr)
     if errors > 0:
-        print("[PACKAGE CORRUPT]")
-        print("Your Project is missing some files. Please download the complete project.")
-        return ask_for_update()
+        if not STATUS_MODE:
+            print("[PACKAGE CORRUPT]")
+            print("Your Project is missing some files. Please download the complete project.")
+            return ask_for_update()
+        else:
+            print(-1)
+            sys.exit()
 
     # Neuestes (jüngstes) mtime unter den angegebenen Dateien
     newest_path, newest_dt = max(mtimes.items(), key=lambda kv: kv[1])
 
     if last_commit_dt > newest_dt:
-        print("[UPDATE AVAILABLE]")
-        print(f"Last Update: {human_delta(last_commit_dt, newest_dt)} younger than your version =)")
+        if not STATUS_MODE:
+            print("[UPDATE AVAILABLE]")
+            print(f"Last Update: {human_delta(last_commit_dt, newest_dt)} younger than your version =)")
+
         return ask_for_update()
-    else:
-        return 0
+
 
 if __name__ == "__main__":
     code = main()
