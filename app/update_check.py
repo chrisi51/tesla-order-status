@@ -149,7 +149,7 @@ def ask_for_update():
                     return 0
                 else:
                     return 2
-            else
+            else:
                 return 1
         else:
             print(2)
