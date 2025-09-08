@@ -2,11 +2,10 @@ import base64
 import hmac
 import hashlib
 import os
-import re
 import sys
 from datetime import datetime
 from typing import Optional
-from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
+from app.utils.params import STATUS_MODE
 from app.utils.colors import color_text
 from app.config import OPTION_CODES, cfg as Config
 
@@ -114,6 +113,9 @@ def generate_token(bytes_len: int, token_length: Optional[int] = None) -> str:
 
 def pseudonymize_data(data: str, length: int) -> str:
     secret_b32 = Config.get("secret")
+    if not secret_b32:
+        secret_b32 = generate_token(32)
+        Config.set("secret", secret_b32)
     secret = _b32decode_nopad(secret_b32)
     digest = hmac.new(secret, data.encode("utf-8"), hashlib.sha256).digest()
     return _b32(digest, length)
