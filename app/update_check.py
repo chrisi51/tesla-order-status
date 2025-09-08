@@ -25,9 +25,9 @@ import shutil
 import tempfile
 
 from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE, cfg as Config
-from app.utils.params import STATUS_MODE
 from app.utils.colors import color_text
-
+from app.utils.helpers import exit_with_status
+from app.utils.params import STATUS_MODE
 
 # ---------------------------
 # files to check
@@ -54,7 +54,7 @@ FILES_TO_CHECK: List[Path] = [
     APP_DIR / "migrations" / "2025-08-30-datafolders.py",
 ]
 
-BRANCH = "update"
+BRANCH = "main"
 FEED_URL = "https://github.com/chrisi51/tesla-order-status"
 ZIP_URL = f"{FEED_URL}/archive/refs/heads/{BRANCH}.zip"
 REQUEST_TIMEOUT = 10  # Sekunden
@@ -125,11 +125,11 @@ def perform_update(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
                 else:
                     shutil.copy2(item, target)
     except Exception as e:
-        exit_with_status("[ERROR] Update failed: {e}")
+        exit_with_status(f"[ERROR] Update failed: {e}")
         return False
 
     if not STATUS_MODE:
-        print("[UPDATED] Files successfully downloaded and extracted.")
+        print(f"[UPDATED] Files successfully downloaded and extracted.")
         os.execv(sys.executable, [sys.executable] + sys.argv)
     else:
         print(0)
@@ -153,12 +153,12 @@ def ask_for_update():
 
 
 def ask_for_update_consent():
-    print(color_text("New Feature: Update Settings", '93'))
-    print(color_text("Please select how you want to handle updates:", 93)),
-    print(color_text("- [m]anual updates: You will be asked to confirm each update, as it was before.", 93)),
-    print(color_text("- [a]utomatic updates: Updates will be installed automatically", 93)),
-    print(color_text("- [b]lock updates: Updates will be disabled completely", 93)),
-    print(color_text("You can change your mind everytime by removing 'update_method' from your 'data/private/settings.json':", 93)),
+    print(color_text('New Feature: Update Settings', '93'))
+    print(color_text('Please select how you want to handle updates:', '93'))
+    print(color_text('- [m]anual updates: You will be asked to confirm each update, as it was before.', '93'))
+    print(color_text('- [a]utomatic updates: Updates will be installed automatically', '93'))
+    print(color_text('- [b]lock updates: Updates will be disabled completely', '93'))
+    print(color_text('You can change your mind everytime by removing "update_method" from your "data/private/settings.json":', '93'))
     consent = input("Please choose an option (m/a/b): ").strip().lower()
 
     if consent == "b":
