@@ -140,15 +140,12 @@ def perform_update(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
 
 def ask_for_update():
     if Config.get("update_method") == "automatically":
-        perform_update()
+        return 0 if perform_update() else 2
     else:
         if not STATUS_MODE:
             answer = input("Do you want to download and extract the update? (y/n): ").strip().lower()
             if answer == "y":
-                if perform_update():
-                    return 0
-                else:
-                    return 2
+                return 0 if perform_update() else 2
             else:
                 return 1
         else:
@@ -181,7 +178,7 @@ def main() -> int:
         ask_for_update_consent()
 
     if Config.get("update_method") == "block":
-        return
+        return 0
     # Lade Feed
     try:
         last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/{BRANCH}.atom")
@@ -234,6 +231,7 @@ def main() -> int:
 
         return ask_for_update()
 
+    return 0
 
 if __name__ == "__main__":
     code = main()

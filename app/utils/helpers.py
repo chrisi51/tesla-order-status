@@ -14,15 +14,20 @@ def exit_with_status(msg: str) -> None:
     """In STATUS_MODE print '-1', otherwise print message and exit."""
     if STATUS_MODE:
         print("-1")
-        sys.exit(0)
-
-    print(f"\n{color_text(msg, '91')}")
+    else:
+        print(f"\n{color_text(msg, '91')}")
     sys.exit(0)
 
 
 def decode_option_codes(option_string: str):
     """Return a list of tuples with (code, description)."""
-    codes = sorted(c.strip() for c in option_string.split(',') if c.strip())
+    if not option_string:
+        return []
+
+    codes = sorted(
+        c.strip().upper() for c in option_string.split(',') if c.strip()
+    )
+
     return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
 
 
