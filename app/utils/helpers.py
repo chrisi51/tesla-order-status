@@ -62,6 +62,9 @@ def normalize_str(key: str) -> str:
     return collapsed.lower()
 
 
+def clean_str(value):
+    return value.strip() if isinstance(value, str) else value
+
 def compare_dicts(old_dict, new_dict, path=""):
     differences = []
     for key in old_dict:
@@ -70,20 +73,23 @@ def compare_dicts(old_dict, new_dict, path=""):
                 {
                     "operation": "removed",
                     "key": path + key,
-                    "old_value": old_dict[key],
+                    "old_value": clean_str(old_dict[key])
                 }
             )
         elif isinstance(old_dict[key], dict) and isinstance(new_dict[key], dict):
             differences.extend(
                 compare_dicts(old_dict[key], new_dict[key], path + key + ".")
             )
-        elif old_dict[key] != new_dict[key]:
-            differences.append(
+        else:
+            old_value = clean_str(old_dict[key])
+            new_value = clean_str(new_dict[key])
+            if old_value != new_value:
+                differences.append(
                 {
                     'operation': 'changed',
                     'key': path + key,
-                    'old_value': old_dict[key],
-                    'value': new_dict[key]
+                    'old_value': old_value,
+                    'value': new_value
                 }
             )
 
@@ -93,7 +99,7 @@ def compare_dicts(old_dict, new_dict, path=""):
                 {
                     'operation': 'added',
                     'key': path + key,
-                    'value': new_dict[key]
+                    'value': clean_str(new_dict[key])
                 }
             )
 
