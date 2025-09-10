@@ -285,9 +285,14 @@ def display_orders(detailed_orders):
         order_number += 1
 
 
+def print_bottom_line() -> None:
     print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
-    print(f"{color_text('For sharing for example use the dedicated --share parameter.', '94')}")
-
+    # Inform user about clipboard status
+    if HAS_PYPERCLIP:
+        print(f"\n{color_text('A share-friendly version of the output has been copied to clipboard!', '93')}")
+    else:
+        print(f"\n{color_text('To automatically copy a share-friendly version of the output to your clipboard, see the installation guide for details:', '91')}")
+        print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
 
 
 # ---------------------------
@@ -298,6 +303,8 @@ def main(access_token) -> None:
     track_usage(old_orders)
 
     if CACHED_MODE:
+        print(color_text(f"Running in CACHED MODE... no API calls are made", '93'))
+
         if old_orders:
             if STATUS_MODE:
                 print("0")
@@ -305,6 +312,8 @@ def main(access_token) -> None:
                 display_orders_SHARE_MODE(old_orders)
             else:
                 display_orders(old_orders)
+
+            print_bottom_line()
         else:
             if STATUS_MODE:
                 print("-1")
@@ -334,7 +343,7 @@ def main(access_token) -> None:
         else:
             if STATUS_MODE:
                 print("0")
-
+            os.utime(ORDERS_FILE, None)
     else:
         if STATUS_MODE:
             print("-1")
@@ -349,11 +358,5 @@ def main(access_token) -> None:
         else:
             display_orders(new_orders)
 
-        # Copy captured output to clipboard if in SHARE_MODE
-        if HAS_PYPERCLIP:
-            print(f"\n{color_text('A share-friendly version of the output has been copied to clipboard!', '94')}")
-        else:
-            print(f"\n{color_text('To automatically copy a share-friendly version of the output to your clipboard, see the installation guide for details:', '91')}")
-            print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
-
+    print_bottom_line()
 

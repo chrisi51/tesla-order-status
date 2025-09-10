@@ -10,6 +10,7 @@ import sys
 from app.config import TOKEN_FILE
 from app.utils.colors import color_text
 from app.utils.connection import request_with_retry
+from app.utils.helpers import exit_with_status
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 
 CLIENT_ID = 'ownerapi'
@@ -55,8 +56,11 @@ def _get_auth_code(code_challenge: str):
     webbrowser.open(auth_url)
     redirected_url = input(color_text("Please enter the redirected URL here: ", '93'))
     parsed_url = urllib.parse.urlparse(redirected_url)
-    return urllib.parse.parse_qs(parsed_url.query).get('code')[0]
-
+    params = urllib.parse.parse_qs(parsed_url.query)
+    code = params.get('code')
+    if not code:
+        exit_with_status("No authentication code found in the redirected URL.")
+    return code[0]
 
 def _exchange_code_for_tokens(auth_code,code_verifier):
     token_data = {

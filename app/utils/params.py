@@ -1,4 +1,8 @@
 import argparse
+import os
+import time
+
+from app.config import ORDERS_FILE
 
 parser = argparse.ArgumentParser(description="Retrieve Tesla order status.")
 group = parser.add_mutually_exclusive_group()
@@ -8,6 +12,11 @@ group.add_argument("--status", action="store_true", help="Only report whether th
 parser.add_argument("--cached", action="store_true", help="Use locally cached data without contacting the API.")
 
 _args, _ = parser.parse_known_args()
+
+if not _args.cached and os.path.exists(ORDERS_FILE):
+    last_api_call = os.path.getmtime(ORDERS_FILE)
+    if time.time() - last_api_call < 60:
+        _args.cached = True
 
 DETAILS_MODE = _args.details
 SHARE_MODE = _args.share

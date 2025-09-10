@@ -53,6 +53,7 @@ Note: A share-friendly version of the output is always copied to your clipboard 
 #### Work Modes
 can be combined with Output Modes
   - `--cached` use locally cached order data without performing any API requests. Useful combined with `--share` to get a share friendly output without polling API again.
+  - When the script is started again within one minute of the last successful API request, cached mode is enabled automatically to avoid unnecessary API calls.
 
 ## Configuration
 ### General Settings
