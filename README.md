@@ -17,8 +17,8 @@ pip install requests pyperclip
 ```
 
 - requests: for the api calls (required)
-- pyperclip: for copying content to the clipboard in sharing mode (optional)
-
+- pyperclip: for copying share output to the clipboard automatically (optional)
+- 
 ### MacOS
 On MacOS it may be better to create a virtual environment:
 ```sh
@@ -48,9 +48,12 @@ Only one of the options can be used at a time.
   - 1 => changes detected
   - 2 => pending updates
   - -1 => error ... you better run the script once without any params to make sure, it is working. Possibly the api token is invalid or there is no tesla_orders.json already
+    
+Note: A share-friendly version of the output is always copied to your clipboard when `pyperclip` is installed. Use `--share` if you also want to see this anonymized output in the console.
 #### Work Modes
 can be combined with Output Modes
   - `--cached` use locally cached order data without performing any API requests. Useful combined with `--share` to get a share friendly output without polling API again.
+  - When the script is started again within one minute of the last successful API request, cached mode is enabled automatically to avoid unnecessary API calls.
 
 ## Configuration
 ### General Settings

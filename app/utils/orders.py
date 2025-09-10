@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import re
@@ -14,6 +15,7 @@ from app.utils.colors import color_text, strip_color
 from app.utils.connection import request_with_retry
 from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
+import app.utils.history as history_module
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.telemetry import track_usage
 from app.utils.timeline import print_timeline
@@ -103,14 +105,7 @@ def get_model_from_order(detailed_order) -> str:
                    model = value.strip()
                    return model
 
-def display_orders_SHARE_MODE(detailed_orders):
-    # Capture output for clipboard if in SHARE_MODE
-    if HAS_PYPERCLIP:
-        import io
-        original_stdout = sys.stdout
-        output_capture = io.StringIO()
-        sys.stdout = output_capture
-
+def _render_share_output(detailed_orders):
     order_number = 0
     for detailed_order in detailed_orders:
         order = detailed_order['order']
@@ -153,26 +148,35 @@ def display_orders_SHARE_MODE(detailed_orders):
 
         order_number += 1
 
-    # Create advertising text but don't print it
-    ad_text = (f"\n{strip_color('Do you want to share your data and compete with others?')}\n"
-               f"{strip_color('Check it out on GitHub: https://github.com/chrisi51/tesla-order-status')}")
-    
-    # Copy captured output to clipboard if in SHARE_MODE
-    if HAS_PYPERCLIP:
+def generate_share_output(detailed_orders):
+    original_share_mode = history_module.SHARE_MODE
+    history_module.SHARE_MODE = True
+    output_capture = io.StringIO()
+    original_stdout = sys.stdout
+    sys.stdout = output_capture
+    try:
+        _render_share_output(detailed_orders)
+    finally:
         sys.stdout = original_stdout
-        captured_output = output_capture.getvalue()
-        output_capture.close()
-        print(captured_output, end='')
-        # Append ad text to captured output before copying to clipboard
-        pyperclip.copy("```\n" + strip_color(captured_output) + ad_text + "\n```")
-        print(f"\n{color_text('Output has been copied to clipboard!', '94')}")
-    else:
-        print(f"\n{color_text('To automatically copy the text to your clipboard, see the installation guide for details:', '91')}")
-        print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
+        history_module.SHARE_MODE = original_share_mode
 
+    if HAS_PYPERCLIP:
+        # Create advertising text but don't print it
+        ad_text = (f"\n{strip_color('Do you want to share your data and compete with others?')}\n"
+                   f"{strip_color('Check it out on GitHub: https://github.com/chrisi51/tesla-order-status')}")
+        pyperclip.copy("```\n" + strip_color(output_capture.getvalue()) + ad_text + "\n```")
+
+    return output_capture.getvalue()
+
+def display_orders_SHARE_MODE(detailed_orders):
+    share_output = generate_share_output(detailed_orders)
+    print(share_output, end='')
 
 
 def display_orders(detailed_orders):
+    if HAS_PYPERCLIP:
+        share_output = generate_share_output(detailed_orders)
+
     order_number = 0
     for detailed_order in detailed_orders:
         order = detailed_order['order']
@@ -198,10 +202,11 @@ def display_orders(detailed_orders):
             for code, description in decoded_options:
                 print(f"{color_text(f'- {code}:', '94')} {description}")
 
-
-        if order_info.get('vehicleOdometer') != 30:
+        odometer = order_info.get('vehicleOdometer')
+        odometer_type = order_info.get('vehicleOdometerType')
+        if odometer is not None and odometer != 30 and odometer_type is not None:
             print(f"\n{color_text('Vehicle Status:', '94')}")
-            print(f"{color_text('- Vehicle Odometer:', '94')} {order_info.get('vehicleOdometer', 'N/A')} {order_info.get('vehicleOdometerType', 'N/A')}")
+            print(f"{color_text('- Vehicle Odometer:', '94')} {odometer} {odometer_type}")
 
         print(f"\n{color_text('Delivery Information:', '94')}")
         store = TESLA_STORES.get(order_info.get('vehicleRoutingLocation', ''), {})
@@ -280,9 +285,14 @@ def display_orders(detailed_orders):
         order_number += 1
 
 
+def print_bottom_line() -> None:
     print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
-    print(f"{color_text('For sharing for example use the dedicated --share parameter.', '94')}")
-
+    # Inform user about clipboard status
+    if HAS_PYPERCLIP:
+        print(f"\n{color_text('A share-friendly version of the output has been copied to clipboard!', '93')}")
+    else:
+        print(f"\n{color_text('To automatically copy a share-friendly version of the output to your clipboard, see the installation guide for details:', '91')}")
+        print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
 
 
 # ---------------------------
@@ -293,6 +303,8 @@ def main(access_token) -> None:
     track_usage(old_orders)
 
     if CACHED_MODE:
+        print(color_text(f"Running in CACHED MODE... no API calls are made", '93'))
+
         if old_orders:
             if STATUS_MODE:
                 print("0")
@@ -300,6 +312,8 @@ def main(access_token) -> None:
                 display_orders_SHARE_MODE(old_orders)
             else:
                 display_orders(old_orders)
+
+            print_bottom_line()
         else:
             if STATUS_MODE:
                 print("-1")
@@ -329,7 +343,7 @@ def main(access_token) -> None:
         else:
             if STATUS_MODE:
                 print("0")
-
+            os.utime(ORDERS_FILE, None)
     else:
         if STATUS_MODE:
             print("-1")
@@ -343,4 +357,6 @@ def main(access_token) -> None:
             display_orders_SHARE_MODE(new_orders)
         else:
             display_orders(new_orders)
+
+    print_bottom_line()
 
