@@ -41,13 +41,13 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
     new_car = False
     first_delivery_window = True
     for entry in history:
-        if entry["key"] == "Vehicle Odometer" and new_car:
-            continue
         if entry["key"] == "Vehicle Odometer":
+            if new_car or entry.get("value") in [None, "", "N/A"]:
+                continue
             timeline.append(
                 {
                    "timestamp": entry["timestamp"],
-                   "key": "your car has been built",
+                   "key": "Your car has been built",
                    "value": "",
                 }
             )
