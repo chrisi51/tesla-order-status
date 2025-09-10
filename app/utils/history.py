@@ -16,14 +16,33 @@ HISTORY_TRANSLATIONS_IGNORED = {
     'details.tasks.registration.regData.orderDetails.vin',
     'details.tasks.finalPayment.data.vin',
     'details.tasks.tradeIn.isMatched',
-    'details.tasks.scheduling.card.messageBody',
     'details.tasks.registration.isMatched',
     'details.tasks.registration.orderDetails.vehicleModelYear',
     'details.state.',
     'details.strings.',
     'details.scheduling.card.',
     'details.scheduling.strings.',
+    'details.tasks.finalPayment.card.',
+    'details.tasks.finalPayment.strings.',
+    'details.tasks.scheduling.card.',
+    'details.tasks.scheduling.strings.',
     'details.tasks.scheduling.isDeliveryEstimatesEnabled',
+    'details.tasks.registration.orderDetails.isAvailableForMatch',
+    'details.tasks.finalPayment.data.isAvailableForMatch',
+    'details.tasks.finalPayment.data.deliveryReadinessDetail.',
+    'details.tasks.finalPayment.data.deliveryReadiness.',
+    'details.tasks.finalPayment.data.agreementDetails',
+    'details.tasks.finalPayment.data.vehicleId',
+    'details.tasks.deliveryAcceptance.gates',
+    'details.tasks.deliveryDetails.regData.reggieRegistrationStatus',
+    'details.tasks.registration.regData.reggieRegistrationStatus',
+    'details.tasks.finalPayment.complete',
+    'details.tasks.finalPayment.data.finalPaymentStatus',
+    'details.tasks.scheduling.isInventoryOrMatched',
+    'details.tasks.finalPayment.data.hasFinalInvoice',
+    'details.tasks.finalPayment.data.hasActiveInvoice',
+    'details.tasks.finalPayment.data.selfSchedulingDetails.deliveryLocationId',
+    'details.tasks.finalPayment.data.selfSchedulingDetails.'
 }
 
 # Define translations for history keys
@@ -62,7 +81,14 @@ HISTORY_TRANSLATIONS_DETAILS = {
     'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.interestRate': 'Interest Rate',
     'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.mileage': 'Range per Year',
     'details.tasks.finalPayment.data.amountDueFinancier': 'Financed Amount',
-    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.approvedLoanAmount': 'Approved Amount'
+    'details.tasks.finalPayment.data.financingDetails.teslaFinanceDetails.approvedLoanAmount': 'Approved Amount',
+    'details.tasks.finalPayment.data.paymentDetails': 'Payment Details',
+    'details.tasks.finalPayment.amountDue': 'Amount Due',
+    'details.tasks.finalPayment.data.amountDueAfterRefund': 'Amount Due After Refund',
+    'details.tasks.finalPayment.status': 'Payment Status',
+    'details.tasks.registration.orderDetails.vehicleId': 'VehicleID',
+    'details.tasks.registration.orderDetails.registrationStatus': 'Registration Status',
+    'details.tasks.finalPayment.data.vehicleregistration': 'Vehicle Registration'
 }
 
 def load_history_from_file():
