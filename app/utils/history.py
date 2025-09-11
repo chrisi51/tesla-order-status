@@ -129,19 +129,21 @@ def get_history_of_order(order_id):
                         continue
 
 
+                    if not DETAILS_MODE:
+                        if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
+                            if entry['timestamp'] != TODAY:
+                                continue
+
+
                     # translate if key is known
                     if key in HISTORY_TRANSLATIONS_DETAILS:
+                        # skip if not in details mode and old entrys (only show in non details mode if its from today)
                         change['key'] = HISTORY_TRANSLATIONS_DETAILS[key]
                     else:
-                        # skip if not in details mode and old entrys (only show in non details mode if its from today)
-                        if not DETAILS_MODE and entry['timestamp'] != TODAY:
-                            continue
+                        continue
+
 
                     if SHARE_MODE:
-                        # dont print if in SHARE_MODE and not in HISTORY_TRANSLATIONS
-                        if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
-                            continue
-
                         # remove values from keys, which have to be anonymous
                         if key in HISTORY_TRANSLATIONS_ANONYMOUS:
                             for field in ['value', 'old_value']:
