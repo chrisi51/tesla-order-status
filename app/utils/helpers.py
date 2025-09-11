@@ -1,10 +1,11 @@
 import base64
 import hmac
 import hashlib
+import json
 import os
 import sys
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from app.utils.params import STATUS_MODE
 from app.utils.colors import color_text
 from app.config import OPTION_CODES, cfg as Config
@@ -69,6 +70,20 @@ def normalize_str(key: str) -> str:
 
 def clean_str(value):
     return value.strip() if isinstance(value, str) else value
+
+
+def pretty_print(data: Any) -> str:
+    """Return a pretty-printed string for lists or dictionaries.
+
+    If *data* is a list or dict, it is converted to a JSON-formatted string
+    with indentation for improved readability. Otherwise, the value is
+    converted to ``str`` and returned unchanged.
+    """
+
+    if isinstance(data, (list, dict)):
+        return json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
+    return str(data)
+
 
 def compare_dicts(old_dict, new_dict, path=""):
     differences = []

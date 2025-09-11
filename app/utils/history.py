@@ -1,12 +1,10 @@
 import json
 import os
-import re
-from typing import List, Dict, Any, Callable
 
 from app.config import HISTORY_FILE, TODAY
 from app.utils.colors import color_text
-from app.utils.helpers import get_date_from_timestamp
-from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
+from app.utils.helpers import get_date_from_timestamp, pretty_print
+from app.utils.params import DETAILS_MODE, SHARE_MODE, ALL_KEYS_MODE
 
 
 # uninteresting history entries
@@ -34,6 +32,8 @@ HISTORY_TRANSLATIONS_IGNORED = {
     'details.tasks.finalPayment.data.agreementDetails',
     'details.tasks.finalPayment.data.vehicleId',
     'details.tasks.deliveryAcceptance.gates',
+    'details.tasks.deliveryAcceptance.card.',
+    'details.tasks.deliveryAcceptance.strings.',
     'details.tasks.deliveryDetails.regData.reggieRegistrationStatus',
     'details.tasks.registration.regData.reggieRegistrationStatus',
     'details.tasks.finalPayment.complete',
@@ -57,7 +57,6 @@ HISTORY_TRANSLATIONS = {
     'details.tasks.registration.orderDetails.reservationDate': 'Reservation Date',
     'details.tasks.registration.orderDetails.orderBookedDate': 'Order Booked Date',
     'details.tasks.registration.orderDetails.vehicleOdometer': 'Vehicle Odometer',
-    'details.tasks.scheduling.apptDateTimeAddressStr': 'Delivery Details',
     'order.modelCode': 'Model',
     'order.mktOptions': 'Configuration'
 }
@@ -88,7 +87,9 @@ HISTORY_TRANSLATIONS_DETAILS = {
     'details.tasks.finalPayment.status': 'Payment Status',
     'details.tasks.registration.orderDetails.vehicleId': 'VehicleID',
     'details.tasks.registration.orderDetails.registrationStatus': 'Registration Status',
-    'details.tasks.finalPayment.data.vehicleregistration': 'Vehicle Registration'
+    'details.tasks.finalPayment.data.vehicleregistration': 'Vehicle Registration',
+    'details.tasks.finalPayment.data.vehicleParts': 'Vehicle Parts',
+    'details.tasks.scheduling.apptDateTimeAddressStr': 'Delivery Details'
 }
 
 def load_history_from_file():
@@ -123,27 +124,32 @@ def get_history_of_order(order_id):
                     key = key_parts[1]
 
                 # skip if key is uninteresting
-                if any(key.startswith(pref) for pref in HISTORY_TRANSLATIONS_IGNORED):
-                    continue
-
-                # translate if key is known
-                if key in HISTORY_TRANSLATIONS_DETAILS:
-                    change['key'] = HISTORY_TRANSLATIONS_DETAILS[key]
-
-                if SHARE_MODE:
-                    # dont print if in SHARE_MODE and not in HISTORY_TRANSLATIONS
-                    if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
+                if not ALL_KEYS_MODE:
+                    if any(key.startswith(pref) for pref in HISTORY_TRANSLATIONS_IGNORED):
                         continue
 
-                    # dont print if not in DETAILS MODE and not in HISTORY_TRANSLATIONS_DETAILS EXCEPT its a NEW Entry
-                    if key in HISTORY_TRANSLATIONS_ANONYMOUS:
-                        for field in ['value', 'old_value']:
-                            if isinstance(change.get(field), str):
-                                change[field] = None
 
-                # dont print if not in DETAILS MODE and not in HISTORY_TRANSLATIONS_DETAILS EXCEPT its a NEW Entry
-                if key not in HISTORY_TRANSLATIONS_DETAILS and not DETAILS_MODE and entry['timestamp'] != TODAY:
-                    continue
+                    if not DETAILS_MODE:
+                        if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
+                            if entry['timestamp'] != TODAY:
+                                continue
+
+
+                    # translate if key is known
+                    if key in HISTORY_TRANSLATIONS_DETAILS:
+                        # skip if not in details mode and old entrys (only show in non details mode if its from today)
+                        change['key'] = HISTORY_TRANSLATIONS_DETAILS[key]
+                    else:
+                        continue
+
+
+                    if SHARE_MODE:
+                        # remove values from keys, which have to be anonymous
+                        if key in HISTORY_TRANSLATIONS_ANONYMOUS:
+                            for field in ['value', 'old_value']:
+                                if isinstance(change.get(field), str):
+                                    change[field] = None
+
 
                 # Check and convert timestamps in value and old_value
                 for field in ['value', 'old_value']:
@@ -155,6 +161,12 @@ def get_history_of_order(order_id):
                 changes.append(change)
     return changes
 
+def _format_value(value):
+    if isinstance(value, (list, dict)):
+        if DETAILS_MODE or ALL_KEYS_MODE:
+            return f"\n {pretty_print(value)}"
+        return "Too much data - only available in --details view"
+    return value
 
 def print_history(order_id: str) -> None:
     history = get_history_of_order(order_id)
@@ -168,27 +180,29 @@ def print_history(order_id: str) -> None:
 def format_history_entry(entry, colored):
     op = entry.get('operation')
     key = entry.get('key')
+    timestamp = entry.get('timestamp')
+
+    value = _format_value(entry.get('value'))
+    old_value = _format_value(entry.get('old_value'))
+
     if op == 'added':
         if colored:
-            return color_text(f"{entry.get('timestamp')}: + {key}: {entry.get('value')}", '94')
+            return color_text(f"{timestamp}: + {key}: {value}", '94')
         else:
-            return f"{entry.get('timestamp')}: + {key}: {entry.get('value')}"
+            return f"{timestamp}: + {key}: {value}"
     if op == 'removed':
         if colored:
-            return color_text(f"{entry.get('timestamp')}: - {key}: {entry.get('old_value')}", '94')
+            return color_text(f"{timestamp}: - {key}: {old_value}", '94')
         else:
-            return f"{entry.get('timestamp')}: - {key}: {entry.get('old_value')}"
+            return f"{timestamp}: - {key}: {old_value}"
     if op == 'changed':
         if colored:
-            timestamp = entry.get("timestamp")
-            old_value = entry.get("old_value")
-            new_value = entry.get("value")
             return (
                 f"{color_text(f'{timestamp}: ≠ {key}:', '94')} "
                 f"{color_text(old_value, '91')} "
                 f"{color_text('->', '94')} "
-                f"{color_text(new_value, '92')}"
+                f"{color_text(value, '92')}"
             )
         else:
-            return f"{entry.get('timestamp')}: ≠ {key}: {entry.get('old_value')} -> {entry.get('value')}"
+            return f"{timestamp}: ≠ {key}: {old_value} -> {value}"
     return f"{op} {key}"

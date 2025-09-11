@@ -5,22 +5,19 @@ from app.utils.history import get_history_of_order
 from app.utils.helpers import get_date_from_timestamp, normalize_str
 from app.utils.colors import color_text
 
-IGNORED_KEYS = {
-    'Routing Location',
-    'Delivery Details',
-    'Model',
-    'Configuration',
-    'Amount Paid',
-    'Payment Method',
-    'Finance Product',
-    'Finance Partner',
-    'Monthly Payment',
-    'Term (months)',
-    'Interest Rate',
-    'Range per Year',
-    'Financed Amount',
-    'Approved Amount'
+TIMELINE_WHITELIST = {
+    'Reservation',
+    'Order Booked',
+    'Delivery Window',
+    'Expected Registration Date',
+    'ETA to Delivery Center',
+    'Delivery Appointment Date',
+    'VIN',
+    'Order Status',
+    'Your car has been built',
+    'Vehicle Odometer'
 }
+TIMELINE_WHITELIST_NORMALIZED = {normalize_str(key) for key in TIMELINE_WHITELIST}
 
 def is_order_key_in_timeline(timeline, key, value = None):
     """Return ``True`` if *timeline* contains an entry with *key* and *value*."""
@@ -41,7 +38,10 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
     new_car = False
     first_delivery_window = True
     for entry in history:
-        if entry["key"] == "Vehicle Odometer":
+        key = entry["key"]
+        key_normalized = normalize_str(key)
+
+        if key_normalized == normalize_str("Vehicle Odometer"):
             if new_car or entry.get("value") in [None, "", "N/A"]:
                 continue
             timeline.append(
@@ -54,7 +54,7 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
             new_car = True
             continue
 
-        if entry["key"] == "Delivery Window" and first_delivery_window:
+        if key_normalized == normalize_str("Delivery Window") and first_delivery_window:
             if not entry["old_value"] in ['None', 'N/A', '']:
                 timeline.append(
                     {
@@ -65,7 +65,7 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
                 )
                 first_delivery_window = False
 
-        if entry["key"] in IGNORED_KEYS:
+        if normalize_str(key) not in TIMELINE_WHITELIST_NORMALIZED:
             continue
 
         timeline.append(entry)

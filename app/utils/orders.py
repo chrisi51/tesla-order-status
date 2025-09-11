@@ -209,26 +209,26 @@ def display_orders(detailed_orders):
             print(f"{color_text('- Vehicle Odometer:', '94')} {odometer} {odometer_type}")
 
         print(f"\n{color_text('Delivery Information:', '94')}")
-        store = TESLA_STORES.get(order_info.get('vehicleRoutingLocation', ''), {})
+        location_id = order_info.get('vehicleRoutingLocation')
+        store = TESLA_STORES.get(str(location_id) if location_id is not None else '', {})
         if store:
-            print(f"{color_text('- Routing Location:', '94')} {store['display_name']} ({order_info.get('vehicleRoutingLocation', 'N/A')})")
+            print(f"{color_text('- Routing Location:', '94')} {store['display_name']} ({location_id or 'N/A'})")
             if DETAILS_MODE:
-                store = TESLA_STORES.get(order_info.get('vehicleRoutingLocation', ''), {})
-                if store:
-                    address = store.get('address', {})
-                    print(f"{color_text('    Address:', '94')} {address.get('address_1', 'N/A')}")
-                    print(f"{color_text('    City:', '94')} {address.get('city', 'N/A')}")
-                    print(f"{color_text('    Postal Code:', '94')} {address.get('postal_code', 'N/A')}")
-                    if store.get('phone'):
-                        print(f"{color_text('    Phone:', '94')} {store['phone']}")
-                    if store.get('store_email'):
-                        print(f"{color_text('    Email:', '94')} {store['store_email']}")
+                address = store.get('address', {})
+                print(f"{color_text('    Address:', '94')} {address.get('address_1', 'N/A')}")
+                print(f"{color_text('    City:', '94')} {address.get('city', 'N/A')}")
+                print(f"{color_text('    Postal Code:', '94')} {address.get('postal_code', 'N/A')}")
+                if store.get('phone'):
+                    print(f"{color_text('    Phone:', '94')} {store['phone']}")
+                if store.get('store_email'):
+                    print(f"{color_text('    Email:', '94')} {store['store_email']}")
         else:
-            print(f"{color_text('- Routing Location:', '94')} N/A")
-        print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
-        print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
+            print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
         print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
-        print(f"{color_text('- Delivery Appointment:', '94')} {scheduling.get('apptDateTimeAddressStr', 'N/A')}")
+        if scheduling.get('deliveryAppointmentDate'):
+            delivery_window = get_date_from_timestamp(scheduling.get('deliveryAppointmentDate'))
+        else:
+            print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
 
         if DETAILS_MODE:
             print(f"\n{color_text('Financing Information:', '94')}")
