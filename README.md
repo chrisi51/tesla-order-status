@@ -41,6 +41,7 @@ python3 tesla_order_status.py --help
 ```
 #### Output Modes
 Only one of the options can be used at a time.
+- `--all` Show ALL keys in your history (potentially spammy output).
 - `--details` show additional information such as financing details.
 - `--share` hide personal data like order ID and VIN for sharing. the history is reduced to date and status changes.
 - `--status` only report whether the order information has changed since the last run. no login happens, so tesla_tokens.json have to be present already. token will get refreshed if necessary.
