@@ -1,12 +1,10 @@
 import json
 import os
-import re
-from typing import List, Dict, Any, Callable
 
 from app.config import HISTORY_FILE, TODAY
 from app.utils.colors import color_text
-from app.utils.helpers import get_date_from_timestamp
-from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
+from app.utils.helpers import get_date_from_timestamp, pretty_print
+from app.utils.params import DETAILS_MODE, SHARE_MODE
 
 
 # uninteresting history entries
@@ -34,6 +32,8 @@ HISTORY_TRANSLATIONS_IGNORED = {
     'details.tasks.finalPayment.data.agreementDetails',
     'details.tasks.finalPayment.data.vehicleId',
     'details.tasks.deliveryAcceptance.gates',
+    'details.tasks.deliveryAcceptance.card.',
+    'details.tasks.deliveryAcceptance.strings.',
     'details.tasks.deliveryDetails.regData.reggieRegistrationStatus',
     'details.tasks.registration.regData.reggieRegistrationStatus',
     'details.tasks.finalPayment.complete',
@@ -57,7 +57,6 @@ HISTORY_TRANSLATIONS = {
     'details.tasks.registration.orderDetails.reservationDate': 'Reservation Date',
     'details.tasks.registration.orderDetails.orderBookedDate': 'Order Booked Date',
     'details.tasks.registration.orderDetails.vehicleOdometer': 'Vehicle Odometer',
-    'details.tasks.scheduling.apptDateTimeAddressStr': 'Delivery Details',
     'order.modelCode': 'Model',
     'order.mktOptions': 'Configuration'
 }
@@ -88,7 +87,9 @@ HISTORY_TRANSLATIONS_DETAILS = {
     'details.tasks.finalPayment.status': 'Payment Status',
     'details.tasks.registration.orderDetails.vehicleId': 'VehicleID',
     'details.tasks.registration.orderDetails.registrationStatus': 'Registration Status',
-    'details.tasks.finalPayment.data.vehicleregistration': 'Vehicle Registration'
+    'details.tasks.finalPayment.data.vehicleregistration': 'Vehicle Registration',
+    'details.tasks.finalPayment.data.vehicleParts': 'Vehicle Parts',
+    'details.tasks.scheduling.apptDateTimeAddressStr': 'Delivery Details'
 }
 
 def load_history_from_file():
@@ -155,6 +156,12 @@ def get_history_of_order(order_id):
                 changes.append(change)
     return changes
 
+def _format_value(value):
+    if isinstance(value, (list, dict)):
+        if DETAILS_MODE:
+            return pretty_print(value)
+        return "Only available in --details view"
+    return value
 
 def print_history(order_id: str) -> None:
     history = get_history_of_order(order_id)
