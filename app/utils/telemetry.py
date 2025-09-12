@@ -5,6 +5,7 @@ from app.config import TELEMETRIC_URL, cfg as Config
 from app.utils.helpers import pseudonymize_data
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.connection import request_with_retry
+from app.utils.locale import get_os_locale
 
 def ensure_telemetry_consent() -> None:
     """Ask user for tracking consent if not already given."""
@@ -67,7 +68,8 @@ def track_usage(orders: List[dict]) -> None:
     data = {
         "id": Config.get("fingerprint"),
         "orders": user_orders,
-        "params": params
+        "params": params,
+        "lang": get_os_locale()
     }
 
     try:

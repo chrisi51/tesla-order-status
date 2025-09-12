@@ -156,6 +156,7 @@ On the very first launch you will be asked for consent. If you decline, nothing 
 - a randomly generated fingerprint that identifies your installation (not tied to your identity)
 - for each tracked order: a pseudonymized order reference number and the associated Tesla model
 - which command line flags were used (e.g. `--details`, `--share`, `--status`, `--cached`)
+- the operating system language (e.g. `en_US`)
 
 ### How is your data protected?
 
