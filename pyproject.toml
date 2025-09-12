@@ -1,0 +1,19 @@
+[project]
+name = "tesla-order-status"
+version = "0.1.0"
+description = "A script to check Tesla order status"
+requires-python = ">=3.8"
+authors = [
+    {name = "REPLACE"}, # Bitte hier Autor eintragen
+]
+dependencies = [
+    "requests>=2.25.0",
+    "pyperclip>=1.8.0",
+]
+
+[project.scripts]
+tesla-order-status = "tesla_order_status:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

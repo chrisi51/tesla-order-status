@@ -1,44 +1,29 @@
 ## Download
-Download the complete projekt. 
+Download the complete project. 
 If you don't know how to do so, just follow that link: https://github.com/chrisi51/tesla-order-status/archive/refs/heads/main.zip 
 
-Don't try to just run single scripts without the context of the entire projekt =)
+Don't try to just run single scripts without the context of the entire project =)
 
 ## Installation
 
-To run the script, you need to install python3 for your operating system.
+Install uv from the official documentation: https://docs.astral.sh/uv/getting-started/installation/
 
-https://www.python.org/downloads/
-
-### General
-Then you need to install the additional libraries by running:
-```sh
-pip install requests pyperclip
-```
-
-- requests: for the api calls (required)
-- pyperclip: for copying share output to the clipboard automatically (optional)
-- 
-### MacOS
-On MacOS it may be better to create a virtual environment:
-```sh
-# creating the environment
-python3 -m venv .venv
-# using the environment
-source .venv/bin/activate
-# installing dependency only in the environment instead of globally
-python3 -m pip install requests pyperclip
-```
+That's it! uv will handle everything automatically.
 
 ## Usage
-Then you can run the script by running:
-```sh
-python3 tesla_order_status.py
+
+Run the script using uv:
+
+```bash
+uv run tesla-order-status
 ```
+
 ### Optional flags:
-```sh
-python3 tesla_order_status.py --help
+
+```bash
+uv run tesla-order-status --help
 ```
+
 #### Output Modes
 Only one of the options can be used at a time.
 - `--all` Show ALL keys in your history (potentially spammy output).
@@ -51,15 +36,18 @@ Only one of the options can be used at a time.
   - -1 => error ... you better run the script once without any params to make sure, it is working. Possibly the api token is invalid or there is no tesla_orders.json already
     
 Note: A share-friendly version of the output is always copied to your clipboard when `pyperclip` is installed. Use `--share` if you also want to see this anonymized output in the console.
+
 #### Work Modes
 can be combined with Output Modes
   - `--cached` use locally cached order data without performing any API requests. Useful combined with `--share` to get a share friendly output without polling API again.
   - When the script is started again within one minute of the last successful API request, cached mode is enabled automatically to avoid unnecessary API calls.
 
 ## Configuration
+
 ### General Settings
 The script stores the configuration in `data/private/settings.json`. You can change the settings on your own risk.
 If the config becomes invalid, it will be reset to the default values.
+
 ### Option Codes
 In the folder `option-codes` all known tesla option codes are stored. You can put in your own json files to extend the list. Files get loaded in alphabetic order and last occurence of any option codes win.
 
