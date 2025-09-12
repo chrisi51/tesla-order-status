@@ -3,7 +3,7 @@ from typing import List, Dict
 
 from app.config import TELEMETRIC_URL, cfg as Config
 from app.utils.helpers import pseudonymize_data
-from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
+from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE, ALL_KEYS_MODE
 from app.utils.connection import request_with_retry
 from app.utils.locale import get_os_locale
 
@@ -63,6 +63,7 @@ def track_usage(orders: List[dict]) -> None:
         "share": SHARE_MODE,
         "status": STATUS_MODE,
         "cached": CACHED_MODE,
+        "all": ALL_KEYS_MODE,
     }
 
     data = {
