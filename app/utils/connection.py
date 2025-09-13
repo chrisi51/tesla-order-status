@@ -6,18 +6,36 @@ import requests
 from typing import Dict, Union
 
 from app.utils.helpers import exit_with_status
+from app.utils.locale import t
 
-def request_with_retry(url, headers=None, data=None, json=None, max_retries=3):
-    """Perform a GET or POST request with exponential backoff retries."""
+def request_with_retry(url, headers=None, data=None, json=None, max_retries=3, exit_on_error=True):
+    """Perform a GET or POST request with exponential backoff retries.
 
+    Parameters
+    ----------
+    url : str
+        Target endpoint.
+    headers : dict, optional
+        Headers to include with the request.
+    data : Any, optional
+        Data payload for ``POST`` requests.
+    json : Any, optional
+        JSON payload for ``POST`` requests.
+    max_retries : int
+        Number of attempts before giving up.
+    exit_on_error : bool
+        When ``True`` (default) the function prints a user friendly message
+        and terminates the program on failure. When ``False`` a ``RuntimeError``
+        is raised instead so callers can handle network issues gracefully.
+    """
     _STATUS_TEXTS: Dict[Union[int, str], str] = {
-        400: "Invalid request (400): Please check parameters.",
-        401: "Unauthorized (401): Token/login seems incorrect.",
-        403: "Forbidden (403): Data not accessible. Try again later.",
-        404: "Not found (404): Resource does not exist or is not visible.",
-        422: "Unprocessable Entity (422): Invalid/missing fields in request.",
-        429: "Too Many Requests (429): Rate limit reached. Please wait and try again.",
-        '5xx': "API unreachable - please try again later.",
+        400: t("400"),
+        401: t("401"),
+        403: t("403"),
+        404: t("404"),
+        422: t("422"),
+        429: t("429"),
+        '5xx': t("5xx"),
     }
     for attempt in range(max_retries):
         try:
@@ -42,15 +60,25 @@ def request_with_retry(url, headers=None, data=None, json=None, max_retries=3):
             except Exception:
                 if response.status_code >= 500:
                     if attempt == max_retries - 1:
-                        exit_with_status(_STATUS_TEXTS['5xx'])
+                        if exit_on_error:
+                            exit_with_status(_STATUS_TEXTS['5xx'])
+                        else:
+                            raise RuntimeError(_STATUS_TEXTS['5xx'])
+
                     time.sleep(5 ** attempt)
                     continue
                 else:
                     error_text = _STATUS_TEXTS.get(response.status_code, _STATUS_TEXTS['5xx'])
-                    exit_with_status(error_text)
+                    if exit_on_error:
+                        exit_with_status(error_text)
+                    else:
+                        raise RuntimeError(error_text)
 
             return response
         except requests.exceptions.RequestException:
             if attempt == max_retries - 1:
-                exit_with_status(_STATUS_TEXTS['5xx'])
+                if exit_on_error:
+                    exit_with_status(_STATUS_TEXTS['5xx'])
+                else:
+                    raise RuntimeError(_STATUS_TEXTS['5xx'])
             time.sleep(2 ** attempt)

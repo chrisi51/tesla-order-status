@@ -1,21 +1,22 @@
 from __future__ import annotations
 from typing import Any, Dict, List
 
-from app.utils.history import get_history_of_order
-from app.utils.helpers import get_date_from_timestamp, normalize_str
 from app.utils.colors import color_text
+from app.utils.helpers import get_date_from_timestamp, normalize_str
+from app.utils.history import get_history_of_order
+from app.utils.locale import t
 
 TIMELINE_WHITELIST = {
-    'Reservation',
-    'Order Booked',
+    t('Reservation'),
+    t('Order Booked'),
     'Delivery Window',
-    'Expected Registration Date',
-    'ETA to Delivery Center',
-    'Delivery Appointment Date',
-    'VIN',
-    'Order Status',
-    'Your car has been built',
-    'Vehicle Odometer'
+    t('Expected Registration Date'),
+    t('ETA to Delivery Center'),
+    t('Delivery Appointment Date'),
+    t('VIN'),
+    t('Order Status'),
+    t('CAR BUILT'),
+    t('Vehicle Odometer')
 }
 TIMELINE_WHITELIST_NORMALIZED = {normalize_str(key) for key in TIMELINE_WHITELIST}
 
@@ -41,25 +42,25 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
         key = entry["key"]
         key_normalized = normalize_str(key)
 
-        if key_normalized == normalize_str("Vehicle Odometer"):
+        if key_normalized == t("Vehicle Odometer"):
             if new_car or entry.get("value") in [None, "", "N/A"]:
                 continue
             timeline.append(
                 {
                    "timestamp": entry["timestamp"],
-                   "key": "Your car has been built",
+                   "key": t("CAR BUILT"),
                    "value": "",
                 }
             )
             new_car = True
             continue
 
-        if key_normalized == normalize_str("Delivery Window") and first_delivery_window:
+        if key_normalized == t("Delivery Window") and first_delivery_window:
             if not entry["old_value"] in ['None', 'N/A', '']:
                 timeline.append(
                     {
                        "timestamp": startdate,
-                       "key": "Delivery Window",
+                       "key": t("Delivery Window"),
                        "value": entry["old_value"],
                     }
                 )
@@ -113,30 +114,30 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
 
 
     if registration_data.get('expectedRegDate'):
-        if not is_order_key_in_timeline(timeline_from_history, 'Expected Registration Date'):
+        if not is_order_key_in_timeline(timeline_from_history, t('Expected Registration Date')):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(registration_data.get("expectedRegDate")),
-                    "key": "Expected Registration Date",
+                    "key": t("Expected Registration Date"),
                     "value": "",
                 }
             )
         
     if final_payment_data.get('etaToDeliveryCenter'):
-        if not is_order_key_in_timeline(timeline_from_history, 'ETA To Delivery Center'):
+        if not is_order_key_in_timeline(timeline_from_history, t('ETA To Delivery Center')):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(final_payment_data.get("etaToDeliveryCenter")),
-                    "key": "ETA To Delivery Center",
+                    "key": t("ETA To Delivery Center"),
                     "value": "",
                 }
             )
         
     if scheduling.get('deliveryAppointmentDate'):
-        if not is_order_key_in_timeline(timeline_from_history, 'Delivery Appointment Date'):
+        if not is_order_key_in_timeline(timeline_from_history, t('Delivery Appointment Date')):
             timeline.append({
                 "timestamp": get_date_from_timestamp(scheduling.get("deliveryAppointmentDate")),
-                "key": "Delivery Appointment Date",
+                "key": t("Delivery Appointment Date"),
                 "value": "",
             })
 
@@ -149,14 +150,14 @@ def print_timeline(order_id: int, detailed_order: Dict[str, Any]) -> None:
     if not timeline:
         return
 
-    print(f"\n{color_text('Order Timeline:', '94')}")
+    print(f"\n{color_text(t('Order Timeline') + ':', '94')}")
     printed_keys: set[str] = set()
     for entry in timeline:
         key = entry.get("key", "")
         msg_parts = []
         if key in printed_keys:
-            msg_parts.append("new ")
-        msg_parts.append(key)
+            msg_parts.append(t("new") + " ")
+        msg_parts.append(t(key))
         if entry.get("value"):
             msg_parts.append(f": {entry['value']}")
         msg = "".join(msg_parts)

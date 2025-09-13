@@ -1,0 +1,137 @@
+{
+  "400": "Invalid request (400): Bitte überprüfen Sie die Parameter.",
+  "401": "Unauthorized (401): Token/Anmeldung scheint falsch zu sein.",
+  "403": "Forbidden (403): Daten nicht zugänglich. Versuchen Sie es später erneut.",
+  "404": "Not found (404): Ressource existiert nicht oder ist nicht sichtbar.",
+  "422": "Unprocessable Entity (422): Ungültige/fehlende Felder in der Anfrage.",
+  "429": "Too Many Requests (429): Limit erreicht. Bitte warten Sie und versuchen Sie es erneut.",
+  "5xx": "API nicht erreichbar – bitte versuchen Sie es später erneut.",
+
+  "New Feature: Update Settings": "Neue Funktion: Update Einstellungen",
+  "Please select how you want to handle updates:": "Bitte wähle, wie Updates gehandhabt werden sollen:",
+  "- [m]anual updates: You will be asked to confirm each update, as it was before.": "- [m]anuelle Updates: Du wirst vor jedem Update gefragt, wie bisher.",
+  "- [a]utomatic updates: Updates will be installed automatically": "- [a]utomatische Updates: Updates werden automatisch installiert",
+  "- [b]lock updates: Updates will be disabled completely": "- [b]lockiere Updates: Updates werden komplett deaktiviert",
+  "You can change your mind everytime by removing \"update_method\" from your \"data/private/settings.json\":": "Du kannst deine Meinung jederzeit ändern, indem du \"update_method\" aus deiner \"data/private/settings.json\" entfernst:",
+  "Please choose an option (m/a/b): ": "Bitte wähle eine Option (m/a/b): ",
+  "Do you want to download and extract the update? (y/n): ": "Möchtest du das Update herunterladen und entpacken? (y/n): ",
+  "[UPDATED] Files successfully downloaded and extracted.": "[AKTUALISIERT] Dateien erfolgreich heruntergeladen und entpackt.",
+  "[ERROR] Update failed: {error}": "[FEHLER] Update fehlgeschlagen: {error}",
+  "[ERROR] Could not load Atom feed for update check: {error}": "[FEHLER] Atom-Feed für Update-Prüfung konnte nicht geladen werden: {error}",
+  "[WARN] File missing: {path}": "[WARNUNG] Datei fehlt: {path}",
+  "[WARN] Path is not a file and could not get read: {path}": "[WARNUNG] Pfad ist keine Datei oder konnte nicht gelesen werden: {path}",
+  "[ERROR] No valid files found in FILES_TO_CHECK.": "[FEHLER] Keine gültigen Dateien in FILES_TO_CHECK gefunden.",
+  "[PACKAGE CORRUPT]": "[PAKET BESCHÄDIGT]",
+  "Your Project is missing some files. Please download the complete project.": "Deinem Projekt fehlen einige Dateien. Bitte lade das komplette Projekt herunter.",
+  "[UPDATE AVAILABLE]": "[UPDATE VERFÜGBAR]",
+  "Last Update: {delta} younger than your version =)": "Letztes Update: {delta} jünger als deine Version =)",
+  "To retrieve your order status, you need to authenticate with your Tesla account.": "Um deinen Bestellstatus abzurufen, musst du dich mit deinem Tesla-Konto authentifizieren.",
+  "A browser window will open with the Tesla login page. After logging in you will likely see a": "Ein Browserfenster mit der Tesla-Anmeldeseite wird geöffnet. Nach dem Einloggen siehst du wahrscheinlich eine",
+  "\"Page Not Found\"": "\"Seite nicht gefunden\"",
+  "page.": "Seite.",
+  "That is CORRECT!": "Das ist KORREKT!",
+  "Copy the full URL of that page and return here. The authentication happens only between you and Tesla; no data leaves your system.": "Kopiere die vollständige URL dieser Seite und kehre hierher zurück. Die Authentifizierung erfolgt nur zwischen dir und Tesla; keine Daten verlassen dein System.",
+  "Proceed to open the login page? (y/n): ": "Soll die Anmeldeseite geöffnet werden? (y/n): ",
+  "Authentication cancelled.": "Authentifizierung abgebrochen.",
+  "Please enter the redirected URL here: ": "Bitte gib hier die weitergeleitete URL ein: ",
+  "No authentication code found in the redirected URL.": "In der weitergeleiteten URL wurde kein Authentifizierungscode gefunden.",
+  "> Tokens saved to '{file}'": "> Tokens unter '{file}' gespeichert",
+  "> Access token is not valid anymore. Refreshing tokens...": "> Zugriffstoken ist nicht mehr gültig. Tokens werden aktualisiert...",
+  "> Error loading tokens from file. Re-authenticating...": "> Fehler beim Laden der Tokens aus der Datei. Erneute Authentifizierung...",
+  "Would you like to save the tokens to a file in the current directory for use in future requests? (y/n): ": "Möchtest du die Tokens zur späteren Verwendung in einer Datei im aktuellen Verzeichnis speichern? (y/n): ",
+  "Do you allow collection of non-personalised usage data to improve the script (check the README.md for details)? (y/n): ": "Erlaubst du die Sammlung nicht-personalisierter Nutzungsdaten zur Verbesserung des Skripts (Details in README.md)? (y/n): ",
+  "Telemetry enabled. Thank you so much for your support, bro.": "Telemetrie aktiviert. Vielen Dank für deine Unterstützung!",
+  "Naww, I've counted on you! =( I may ask again later, OK? =)": "Nawww, ich habe auf dich gezählt! =( Vielleicht frage ich später nochmal, ok? =)",
+  "Telemetry disabled. (ENTER): ": "Telemetrie deaktiviert. (ENTER): ",
+  "Unknown option code": "Unbekannter Optionscode",
+
+  "Error: Received empty response from Tesla API. Please try again later." : "Fehler: Leere Antwort von der Tesla-API erhalten. Bitte versuchen Sie es später erneut.",
+  "> Orders saved to '{file}'": "Bestellungen gespeichert unter '{file}'",
+  "unknown": "unbekannt",
+  "new": "(neu)",
+  "Order Details": "Bestelldetails",
+  "Order ID": "Auftragsnummer",
+  "Status": "Status",
+  "VIN": "FIN (Fahrzeugidentifikationsnummer)",
+  "Configuration": "Konfiguration",
+  "Delivery Information": "Informationen zur Auslieferung",
+  "Routing Location": "Abholort",
+  "More Information in --details mode": "Weiter Informationen im --details Modus",
+  "Address": "Adresse",
+  "City": "Stadt",
+  "Postal Code": "PLZ",
+  "Phone": "Telefonnummer",
+  "Email": "e-Mail",
+  "Delivery Center": "Auslieferungszentrum",
+  "ETA to Delivery Center": "Voraussichtliche Ankunftszeit im Lieferzentrum",
+  "Delivery Appointment Date": "Auslieferungstermin",
+  "Delivery Window": "Lieferzeitraum",
+  "Financing Information": "Finanzierungsinformationen",
+  "Payment Type": "Zahlungsart",
+  "Cash": "Bar",
+  "Amount Paid": "Gezahlter Betrag",
+  "Payment Method": "Zahlungsmethode",
+  "Account Balance": "Kontostand",
+  "Amount Due": "Offener Betrag",
+  "Finance Product": "Finanzierungsprodukt",
+  "Finance Partner": "Finanzierungspartner",
+  "Monthly Payment": "Monatliche Rate",
+  "Term (months)": "Vertragslaufzeit (Monate)",
+  "Interest Rate": "Zinsrate",
+  "Range per Year": "Reichweite pro Jahr",
+  "Financed Amount": "Finanzierter Betrag",
+  "Approved Amount": "Genehmigter Betrag",
+  "BOTTOM LINE HELP": "Probiere --help aus, um die neuen Funktionen anzuzeigen, die für dich interessant sein könnten =)",
+  "BOTTOM LINE TEXT IN CLIPBOARD": "Eine Version der Ausgabe zum Teilen wurde in die Zwischenablage kopiert!",
+  "BOTTOM LINE CLIPBOARD NOT WORKING": "Um automatisch eine geeignete Version der Ausgabe zum Teilen in Ihre Zwischenablage zu kopieren, lesen Sie bitte die Installationsanleitung für weitere Details",
+
+  "Running in CACHED MODE... no API calls are made": "CACHED MODE aktiv... es werden keine API-Aufrufe durchgeführt.",
+  "No cached orders found in '{file}'": "Keine zwischengespeicherten Bestellungen gefunden in '{file}'",
+  "Start retrieving the information. Please be patient...": "Rufe die Informationen ab. Einen Moment bitte...",
+
+  "Would you like to save the order information in a file for change tracking? ": "Möchten Sie die Bestellinformationen für eine Änderungsverfolgung in einer Datei speichern?",
+
+  "Change History": "Änderungsverlauf",
+  "Order Timeline": "Bestellverlauf",
+  "Expected Registration Date": "Voraussichtliches Registrierungsdatum",
+  "Order Status": "Bestellstatus",
+  "Reservation": "Reservierung",
+  "Reservation Date": "Reservierungsdatum",
+  "Order Booked": "Bestellung aufgegeben",
+  "Order Booked Date": "Bestelldatum",
+  "Vehicle Odometer": "Fahrzeugkilometerzähler",
+  "Model": "Modell",
+  "Amount Due After Refund": "Nach Rückerstattung fälliger Betrag",
+  "Payment Status": "Zahlungsstatus",
+  "VehicleID": "Fahrzeug-ID",
+  "Registration Status": "Registrierungsstatus",
+  "Vehicle Registration": "Fahrzeugzulassung",
+  "Vehicle Parts": "Fahrzeugteile",
+  "Delivery Details": "Lieferdetails",
+  "Too much data - only available in --details view": "Zu viele Daten - nur sichtbar in der --details Ansicht",
+  "CAR BUILT": "Dein Auto wurde gebaut",
+
+
+  "HELP PARAM STATUS": "Nur melden, ob es seit der letzten Überprüfung Änderungen gibt.",
+  "HELP PARAM SHARE": "Verbirgt persönliche Daten wie Bestellnummer und Fahrgestellnummer zum Teilen.",
+  "HELP PARAM DETAILS": "Zeigt zusätzliche Details wie Finanzierungsinformationen an.",
+  "HELP PARAM ALL": "ALLE Schlüssel im Verlauf anzeigen (möglicherweise sehr viele Daten!)",
+  "HELP PARAM CACHED": "Verwendet lokal zwischengespeicherte Daten, ohne die API zu kontaktieren."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

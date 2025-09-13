@@ -27,6 +27,7 @@ import tempfile
 from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE, cfg as Config
 from app.utils.colors import color_text
 from app.utils.helpers import exit_with_status
+from app.utils.locale import t
 from app.utils.params import STATUS_MODE
 
 # ---------------------------
@@ -125,11 +126,11 @@ def perform_update(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
                 else:
                     shutil.copy2(item, target)
     except Exception as e:
-        exit_with_status(f"[ERROR] Update failed: {e}")
+        exit_with_status(t("[ERROR] Update failed: {error}").format(error=e))
         return False
 
     if not STATUS_MODE:
-        print(f"[UPDATED] Files successfully downloaded and extracted.")
+        print(t("[UPDATED] Files successfully downloaded and extracted."))
         os.execv(sys.executable, [sys.executable] + sys.argv)
     else:
         print(0)
@@ -143,7 +144,7 @@ def ask_for_update():
         return 0 if perform_update() else 2
     else:
         if not STATUS_MODE:
-            answer = input("Do you want to download and extract the update? (y/n): ").strip().lower()
+            answer = input(t("Do you want to download and extract the update? (y/n): ")).strip().lower()
             if answer == "y":
                 return 0 if perform_update() else 2
             else:
@@ -154,13 +155,13 @@ def ask_for_update():
 
 
 def ask_for_update_consent():
-    print(color_text('New Feature: Update Settings', '93'))
-    print(color_text('Please select how you want to handle updates:', '93'))
-    print(color_text('- [m]anual updates: You will be asked to confirm each update, as it was before.', '93'))
-    print(color_text('- [a]utomatic updates: Updates will be installed automatically', '93'))
-    print(color_text('- [b]lock updates: Updates will be disabled completely', '93'))
-    print(color_text('You can change your mind everytime by removing "update_method" from your "data/private/settings.json":', '93'))
-    consent = input("Please choose an option (m/a/b): ").strip().lower()
+    print(color_text(t('New Feature: Update Settings'), '93'))
+    print(color_text(t('Please select how you want to handle updates:'), '93'))
+    print(color_text(t('- [m]anual updates: You will be asked to confirm each update, as it was before.'), '93'))
+    print(color_text(t('- [a]utomatic updates: Updates will be installed automatically'), '93'))
+    print(color_text(t('- [b]lock updates: Updates will be disabled completely'), '93'))
+    print(color_text(t('You can change your mind everytime by removing "update_method" from your "data/private/settings.json":'), '93'))
+    consent = input(t("Please choose an option (m/a/b): ")).strip().lower()
 
     if consent == "b":
         Config.set("update_method", "block")
@@ -184,7 +185,7 @@ def main() -> int:
         last_commit_dt = get_latest_updated_from_atom(f"{FEED_URL}/commits/{BRANCH}.atom")
     except Exception as e:
         if not STATUS_MODE:
-            print(f"[ERROR] Could not load Atom feed for update check: {e}", file=sys.stderr)
+            print(t("[ERROR] Could not load Atom feed for update check: {error}").format(error=e), file=sys.stderr)
         else:
             print(-1)
             sys.exit()
@@ -200,22 +201,22 @@ def main() -> int:
             if not path.exists():
                 errors += 1
                 if not STATUS_MODE:
-                    print(f"[WARN] File missing: {p}")
+                    print(t("[WARN] File missing: {path}").format(path=p))
             else:
                 errors += 1
                 if not STATUS_MODE:
-                    print(f"[WARN] Path is not a file and could not get read: {p} ")
+                    print(t("[WARN] Path is not a file and could not get read: {path}").format(path=p))
             continue
         mtimes[p] = m
 
     if not mtimes:
         errors += 1
         if not STATUS_MODE:
-            print("[ERROR] No valid files found in FILES_TO_CHECK.", file=sys.stderr)
+            print(t("[ERROR] No valid files found in FILES_TO_CHECK."), file=sys.stderr)
     if errors > 0:
         if not STATUS_MODE:
-            print("[PACKAGE CORRUPT]")
-            print("Your Project is missing some files. Please download the complete project.")
+            print(t("[PACKAGE CORRUPT]"))
+            print(t("Your Project is missing some files. Please download the complete project."))
             return ask_for_update()
         else:
             print(-1)
@@ -226,8 +227,8 @@ def main() -> int:
 
     if last_commit_dt > newest_dt:
         if not STATUS_MODE:
-            print("[UPDATE AVAILABLE]")
-            print(f"Last Update: {human_delta(last_commit_dt, newest_dt)} younger than your version =)")
+            print(t("[UPDATE AVAILABLE]"))
+            print(t("Last Update: {delta} younger than your version =)").format(delta=human_delta(last_commit_dt, newest_dt)))
 
         return ask_for_update()
 

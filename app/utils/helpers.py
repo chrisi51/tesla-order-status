@@ -6,8 +6,9 @@ import os
 import sys
 from datetime import datetime
 from typing import Any, Optional
-from app.utils.params import STATUS_MODE
 from app.utils.colors import color_text
+from app.utils.locale import t
+from app.utils.params import STATUS_MODE
 from app.config import OPTION_CODES, cfg as Config
 
 
@@ -25,12 +26,15 @@ def decode_option_codes(option_string: str):
     if not option_string:
         return []
 
+    excluded_codes = {'MDL3', 'MDLY', 'MDLX', 'MDLS'}
     codes = sorted(
-        c.strip().upper() for c in option_string.split(',') if c.strip()
+        c.strip().upper() for c in option_string.split(',') 
+        if c.strip() and c.strip().upper() not in excluded_codes
     )
 
-    return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
 
+
+    return [(code, OPTION_CODES.get(code, t("Unknown option code"))) for code in codes]
 
 def get_date_from_timestamp(timestamp):
     """Truncates an ISO-8601 timestamp to its date component.

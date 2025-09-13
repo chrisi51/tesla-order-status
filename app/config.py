@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional, List
 # -------------------------
 APP_VERSION = '9.99.9-9999' # we can use a dummy version here, as the API does not check it strictly
 TODAY = time.strftime('%Y-%m-%d')
-TELEMETRIC_URL = "https://tesla-order-status-tracker.webxass.de/telemetry.php"
+TELEMETRIC_URL = "https://www.tesla-order-status-tracker.de/push/telemetry.php"
 
 # -------------------------
 # Directory structure (new)

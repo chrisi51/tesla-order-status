@@ -15,6 +15,7 @@ from app.utils.colors import color_text, strip_color
 from app.utils.connection import request_with_retry
 from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
+from app.utils.locale import t, LANGUAGE
 import app.utils.history as history_module
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.telemetry import track_usage
@@ -30,7 +31,7 @@ def _get_all_orders(access_token):
         order_details = _retrieve_order_details(order_id, access_token)
 
         if not order_details or not order_details.get('tasks'):
-            print(color_text("\nError: Received empty response from Tesla API. Please try again later.", '91'))
+            print(color_text(t("Error: Received empty response from Tesla API. Please try again later."), '91'))
             if STATUS_MODE:
                 print("-1")
             sys.exit(1)
@@ -52,7 +53,7 @@ def _retrieve_orders(access_token):
 
 def _retrieve_order_details(order_id, access_token):
     headers = {'Authorization': f'Bearer {access_token}'}
-    api_url = f'https://akamai-apigateway-vfx.tesla.com/tasks?deviceLanguage=en&deviceCountry=DE&referenceNumber={order_id}&appVersion={APP_VERSION}'
+    api_url = f'https://akamai-apigateway-vfx.tesla.com/tasks?deviceLanguage={LANGUAGE}&deviceCountry=DE&referenceNumber={order_id}&appVersion={APP_VERSION}'
     response = request_with_retry(api_url, headers)
     return response.json()
 
@@ -61,8 +62,7 @@ def _save_orders_to_file(orders):
     with open(ORDERS_FILE, 'w') as f:
         json.dump(orders, f)
     if not STATUS_MODE:
-        print(color_text(f"\n> Orders saved to '{ORDERS_FILE}'", '94'))
-
+        print(color_text(t("> Orders saved to '{file}'").format(file=ORDERS_FILE), '94'))
 
 def _load_orders_from_file():
     if os.path.exists(ORDERS_FILE):
@@ -187,94 +187,96 @@ def display_orders(detailed_orders):
         final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
 
         print(f"{'-'*45}")
-        print(f"{'ORDER INFORMATION':^45}")
-        print(f"{'-'*45}")
 
-        print(f"{color_text('Order Details:', '94')}")
-        print(f"{color_text('- Order ID:', '94')} {order['referenceNumber']}")
-        print(f"{color_text('- Status:', '94')} {order['orderStatus']}")
-        print(f"{color_text('- Model:', '94')} {order['modelCode']}")
-        print(f"{color_text('- VIN:', '94')} {order.get('vin', 'N/A')}")
+        print(f"{color_text(t('Order Details') + ':', '94')}")
+        print(f"{color_text('- ' + t('Order ID') + ':', '94')} {order['referenceNumber']}")
+        print(f"{color_text('- ' + t('Status') + ':', '94')} {order['orderStatus']}")
+        print(f"{color_text('- ' + t('VIN') + ':', '94')} {order.get('vin', t('unknown'))}")
 
         decoded_options = decode_option_codes(order.get('mktOptions', ''))
         if decoded_options:
-            print(f"\n{color_text('Configuration Options:', '94')}")
+            print(f"\n{color_text(t('Configuration') + ':', '94')}")
             for code, description in decoded_options:
                 print(f"{color_text(f'- {code}:', '94')} {description}")
 
         odometer = order_info.get('vehicleOdometer')
         odometer_type = order_info.get('vehicleOdometerType')
         if odometer is not None and odometer != 30 and odometer_type is not None:
-            print(f"\n{color_text('Vehicle Status:', '94')}")
-            print(f"{color_text('- Vehicle Odometer:', '94')} {odometer} {odometer_type}")
+            print(f"\n{color_text(t('Vehicle Status') + ':', '94')}")
+            print(f"{color_text('- ' + t('Vehicle Odometer') + ':', '94')} {odometer} {odometer_type}")
 
-        print(f"\n{color_text('Delivery Information:', '94')}")
+        print(f"\n{color_text(t('Delivery Information') + ':', '94')}")
         location_id = order_info.get('vehicleRoutingLocation')
         store = TESLA_STORES.get(str(location_id) if location_id is not None else '', {})
         if store:
-            print(f"{color_text('- Routing Location:', '94')} {store['display_name']} ({location_id or 'N/A'})")
+            print(f"{color_text('- ' + t('Routing Location') + ':', '94')} {store['display_name']} ({location_id or t('unknown')})")
             if DETAILS_MODE:
                 address = store.get('address', {})
-                print(f"{color_text('    Address:', '94')} {address.get('address_1', 'N/A')}")
-                print(f"{color_text('    City:', '94')} {address.get('city', 'N/A')}")
-                print(f"{color_text('    Postal Code:', '94')} {address.get('postal_code', 'N/A')}")
+                print(f"    {color_text(t('Address') + ':', '94')} {address.get('address_1', t('unknown'))}")
+                print(f"    {color_text(t('City') + ':', '94')} {address.get('city', t('unknown'))}")
+                print(f"    {color_text(t('Postal Code') + ':', '94')} {address.get('postal_code', t('unknown'))}")
                 if store.get('phone'):
-                    print(f"{color_text('    Phone:', '94')} {store['phone']}")
+                    print(f"    {color_text(t('Phone') + ':', '94')} {store['phone']}")
                 if store.get('store_email'):
-                    print(f"{color_text('    Email:', '94')} {store['store_email']}")
+                    print(f"    {color_text(t('Email') + ':', '94')} {store['store_email']}")
+            else:
+                print(f"    {color_text(t('More Information in --details mode'), '94')}")
         else:
-            print(f"{color_text('- Delivery Center:', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
-        print(f"{color_text('- ETA to Delivery Center:', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
+            print(f"{color_text('- ' + t('Delivery Center') + ':', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
+
+        if final_payment_data.get('etaToDeliveryCenter'):
+            print(f"{color_text('- ' + t('ETA to Delivery Center') + ':', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
         if scheduling.get('deliveryAppointmentDate'):
             delivery_window = get_date_from_timestamp(scheduling.get('deliveryAppointmentDate'))
+            print(f"{color_text('- ' + t('Delivery Appointment Date') + ':', '94')} {delivery_window}")
         else:
-            print(f"{color_text('- Delivery Window:', '94')} {scheduling.get('deliveryWindowDisplay', 'N/A')}")
+            print(f"{color_text('- ' + t('Delivery Window') + ':', '94')} {scheduling.get('deliveryWindowDisplay', t('unknown'))}")
 
         if DETAILS_MODE:
-            print(f"\n{color_text('Financing Information:', '94')}")
+            print(f"\n{color_text(t('Financing Information') + ':', '94')}")
             financing_details = final_payment_data.get('financingDetails') or {}
             order_type = financing_details.get('orderType')
             tesla_finance_details = financing_details.get('teslaFinanceDetails') or {}
 
             # Handle cash purchases where no financing data is present
             if order_type == 'CASH' or not final_payment_data.get('financingIntent'):
-                print(f"{color_text('- Payment Type:', '94')} Cash")
+                print(f"{color_text('- ' + t('Payment Type') + ':', '94')} {t('Cash')}")
                 payment_details = final_payment_data.get('paymentDetails') or []
                 if payment_details:
                     first_payment = payment_details[0]
                     amount_paid = first_payment.get('amountPaid', 'N/A')
                     payment_type = first_payment.get('paymentType', 'N/A')
-                    print(f"{color_text('- Amount Paid:', '94')} {amount_paid}")
-                    print(f"{color_text('- Payment Method:', '94')} {payment_type}")
+                    print(f"{color_text('- ' + t('Amount Paid') + ':', '94')} {amount_paid}")
+                    print(f"{color_text('- ' + t('Payment Method') + ':', '94')} {payment_type}")
                 account_balance = final_payment_data.get('accountBalance')
                 if account_balance is not None:
-                    print(f"{color_text('- Account Balance:', '94')} {account_balance}")
+                    print(f"{color_text('- ' + t('Account Balance') + ':', '94')} {account_balance}")
                 amount_due = final_payment_data.get('amountDue')
                 if amount_due is not None:
-                    print(f"{color_text('- Amount Due:', '94')} {amount_due}")
+                    print(f"{color_text('- ' + t('Amount Due') + ':', '94')} {amount_due}")
             else:
                 finance_product = financing_details.get('financialProductType', 'N/A')
-                print(f"{color_text('- Finance Product:', '94')} {finance_product}")
+                print(f"{color_text('- ' + t('Finance Product') + ':', '94')} {finance_product}")
                 finance_partner = tesla_finance_details.get('financePartnerName', 'N/A')
-                print(f"{color_text('- Finance Partner:', '94')} {finance_partner}")
+                print(f"{color_text('- ' + t('Finance Partner') + ':', '94')} {finance_partner}")
                 monthly_payment = tesla_finance_details.get('monthlyPayment')
                 if monthly_payment is not None:
-                    print(f"{color_text('- Monthly Payment:', '94')} {monthly_payment}")
+                    print(f"{color_text('- ' + t('Monthly Payment') + ':', '94')} {monthly_payment}")
                 term_months = tesla_finance_details.get('termsInMonths')
                 if term_months is not None:
-                    print(f"{color_text('- Term (months):', '94')} {term_months}")
+                    print(f"{color_text('- ' + t('Term (months)') + ':', '94')} {term_months}")
                 interest_rate = tesla_finance_details.get('interestRate')
                 if interest_rate is not None:
-                    print(f"{color_text('- Interest Rate:', '94')} {interest_rate} %")
+                    print(f"{color_text('- ' + t('Interest Rate') + ':', '94')} {interest_rate} %")
                 mileage = tesla_finance_details.get('mileage')
                 if mileage is not None:
-                    print(f"{color_text('- Range per Year:', '94')} {mileage}")
+                    print(f"{color_text('- ' + t('Range per Year') + ':', '94')} {mileage}")
                 financed_amount = final_payment_data.get('amountDueFinancier')
                 if financed_amount is not None:
-                    print(f"{color_text('- Financed Amount:', '94')} {financed_amount}")
+                    print(f"{color_text('- ' + t('Financed Amount') + ':', '94')} {financed_amount}")
                 approved_amount = tesla_finance_details.get('approvedLoanAmount')
                 if approved_amount is not None:
-                    print(f"{color_text('- Approved Amount:', '94')} {approved_amount}")
+                    print(f"{color_text('- ' + t('Approved Amount') + ':', '94')} {approved_amount}")
 
         print(f"{'-'*45}")
 
@@ -286,12 +288,12 @@ def display_orders(detailed_orders):
 
 
 def print_bottom_line() -> None:
-    print(f"\n{color_text('try --help for showing the new features, that may be interesting for you =)', '94')}")
+    print(f"\n{color_text(t('BOTTOM LINE HELP'), '94')}")
     # Inform user about clipboard status
     if HAS_PYPERCLIP:
-        print(f"\n{color_text('A share-friendly version of the output has been copied to clipboard!', '93')}")
+        print(f"\n{color_text(t('BOTTOM LINE TEXT IN CLIPBOARD'), '93')}")
     else:
-        print(f"\n{color_text('To automatically copy a share-friendly version of the output to your clipboard, see the installation guide for details:', '91')}")
+        print(f"\n{color_text(t('BOTTOM LINE CLIPBOARD NOT WORKING'), '91')}")
         print(f"{color_text('https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#general', '91')}")
 
 
@@ -303,7 +305,7 @@ def main(access_token) -> None:
     track_usage(old_orders)
 
     if CACHED_MODE:
-        print(color_text(f"Running in CACHED MODE... no API calls are made", '93'))
+        print(color_text(t("Running in CACHED MODE... no API calls are made"), '93'))
 
         if old_orders:
             if STATUS_MODE:
@@ -318,11 +320,11 @@ def main(access_token) -> None:
             if STATUS_MODE:
                 print("-1")
             else:
-                print(color_text(f"No cached orders found in '{ORDERS_FILE}'", '91'))
+                print(color_text(t("No cached orders found in '{file}'").format(file=ORDERS_FILE), '91'))
         sys.exit(0)
 
     if not STATUS_MODE:
-        print(color_text("\n> Start retrieving the information. Please be patient...\n", '94'))
+        print(color_text(f"\n> {t('Start retrieving the information. Please be patient...')}\n", '94'))
 
 
     new_orders = _get_all_orders(access_token)
@@ -349,7 +351,7 @@ def main(access_token) -> None:
             print("-1")
         else:
             # ask user if they want to save the new orders to a file for comparison next time
-            if input(color_text("Would you like to save the order information to a file for future comparison? (y/n): ", '93')).lower() == 'y':
+            if input(color_text(t("Would you like to save the order information in a file for change tracking? (y/n): "), '93')).lower() == 'y':
                 _save_orders_to_file(new_orders)
 
     if not STATUS_MODE:

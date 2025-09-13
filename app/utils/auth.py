@@ -11,6 +11,7 @@ from app.config import TOKEN_FILE
 from app.utils.colors import color_text
 from app.utils.connection import request_with_retry
 from app.utils.helpers import exit_with_status
+from app.utils.locale import t
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 
 CLIENT_ID = 'ownerapi'
@@ -41,25 +42,25 @@ def _get_auth_code(code_challenge: str):
     }
 
     auth_url = f"{AUTH_URL}?{urllib.parse.urlencode(auth_params)}"
-    print(color_text("To retrieve your order status, you need to authenticate with your Tesla account.", '93'))
+    print(color_text(t("To retrieve your order status, you need to authenticate with your Tesla account."), '93'))
     message_parts = [
-        color_text("A browser window will open with the Tesla login page. After logging in you will likely see a", 93),
-        color_text('"Page Not Found"', 91),
-        color_text("page.", 93),
-        color_text("That is CORRECT!", 91),
+        color_text(t("A browser window will open with the Tesla login page. After logging in you will likely see a"), 93),
+        color_text(t('\"Page Not Found\"'), 91),
+        color_text(t("page."), 93),
+        color_text(t("That is CORRECT!"), 91),
     ]
     print(" ".join(message_parts))
-    print(color_text("Copy the full URL of that page and return here. The authentication happens only between you and Tesla; no data leaves your system.", '93'))
-    if input(color_text("Proceed to open the login page? (y/n): ", '93')).lower() != 'y':
-        print(color_text("Authentication cancelled.", '91'))
+    print(color_text(t("Copy the full URL of that page and return here. The authentication happens only between you and Tesla; no data leaves your system."), '93'))
+    if input(color_text(t("Proceed to open the login page? (y/n): "), '93')).lower() != 'y':
+        print(color_text(t("Authentication cancelled."), '91'))
         sys.exit(0)
     webbrowser.open(auth_url)
-    redirected_url = input(color_text("Please enter the redirected URL here: ", '93'))
+    redirected_url = input(color_text(t("Please enter the redirected URL here: "), '93'))
     parsed_url = urllib.parse.urlparse(redirected_url)
     params = urllib.parse.parse_qs(parsed_url.query)
     code = params.get('code')
     if not code:
-        exit_with_status("No authentication code found in the redirected URL.")
+        exit_with_status(t("No authentication code found in the redirected URL."))
     return code[0]
 
 def _exchange_code_for_tokens(auth_code,code_verifier):
@@ -78,7 +79,7 @@ def _save_tokens_to_file(tokens):
     with open(TOKEN_FILE, 'w') as f:
         json.dump(tokens, f)
     if not STATUS_MODE:
-        print(color_text(f"> Tokens saved to '{TOKEN_FILE}'", '94'))
+        print(color_text(t("> Tokens saved to '{file}'").format(file=TOKEN_FILE), '94'))
 
 
 def _load_tokens_from_file():
@@ -116,7 +117,7 @@ def main() -> str:
 
             if not _is_token_valid(access_token):
                 if not STATUS_MODE:
-                    print(color_text("> Access token is not valid anymore. Refreshing tokens...", '94'))
+                    print(color_text(t("> Access token is not valid anymore. Refreshing tokens..."), '94'))
                 token_response = _refresh_tokens(refresh_token)
                 access_token = token_response['access_token']
                 # refresh access token in file
@@ -125,7 +126,7 @@ def main() -> str:
 
         except (json.JSONDecodeError, KeyError) as e:
             if not STATUS_MODE:
-                print(color_text("> Error loading tokens from file. Re-authenticating...", '94'))
+                print(color_text(t("> Error loading tokens from file. Re-authenticating..."), '94'))
                 token_response = _exchange_code_for_tokens(_get_auth_code(code_challenge), code_verifier)
                 access_token = token_response['access_token']
                 refresh_token = token_response['refresh_token']
@@ -139,7 +140,7 @@ def main() -> str:
             token_response = _exchange_code_for_tokens(_get_auth_code(code_challenge), code_verifier)
             access_token = token_response['access_token']
             refresh_token = token_response['refresh_token']
-            if input(color_text("Would you like to save the tokens to a file in the current directory for use in future requests? (y/n): ", '93')).lower() == 'y':
+            if input(color_text(t("Would you like to save the tokens to a file in the current directory for use in future requests? (y/n): "), '93')).lower() == 'y':
                 _save_tokens_to_file(token_response)
         else:
             print(-1)
