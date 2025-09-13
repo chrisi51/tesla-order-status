@@ -90,20 +90,22 @@ def get_order(order_id):
     return orders.get(order_id)
 
 def get_model_from_order(detailed_order) -> str:
-    order = detailed_order['order']
+    order = detailed_order.get('order', {})
     decoded_options = decode_option_codes(order.get('mktOptions', ''))
-    if decoded_options:
-        for code, description in decoded_options:
-            if 'Model' in description and len(description) > 10:
-               # Extract model name and configuration suffix using regex
-               # Model Y Long Range Dual Motor - AWD LR (Juniper) => Model Y - AWD LR
-               match = re.match(r'(Model [YSX3]).*?((AWD|RWD) (LR|SR|P)).*?$', description)
-               if match:
-                   model_name = match.group(1)
-                   config_suffix = match.group(2)
-                   value = f"{model_name} - {config_suffix}"
-                   model = value.strip()
-                   return model
+    model = "unknown"
+    for _, description in decoded_options:
+        if 'Model' in description and len(description) > 10:
+           # Extract model name and configuration suffix using regex
+           # Model Y Long Range Dual Motor - AWD LR (Juniper) => Model Y - AWD LR
+           match = re.match(r'(Model [YSX3]).*?((AWD|RWD) (LR|SR|P)).*?$', description)
+           if match:
+               model_name = match.group(1)
+               config_suffix = match.group(2)
+               value = f"{model_name} - {config_suffix}"
+               model = value.strip()
+               break
+
+   return model
 
 def _render_share_output(detailed_orders):
     order_number = 0
