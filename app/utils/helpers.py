@@ -30,7 +30,7 @@ def decode_option_codes(option_string: str):
     codes = sorted({
         c.strip().upper() for c in option_string.split(',')
         if c.strip() and c.strip().upper() not in excluded_codes
-    )}
+    })
 
     return [
         (code, OPTION_CODES.get(code, t("Unknown option code")))
