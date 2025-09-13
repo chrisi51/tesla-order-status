@@ -1,8 +1,8 @@
 ## Download
-Download the complete projekt. 
+Download the complete project. 
 If you don't know how to do so, just follow that link: https://github.com/chrisi51/tesla-order-status/archive/refs/heads/main.zip 
 
-Don't try to just run single scripts without the context of the entire projekt =)
+Don't try to just run single scripts without the context of the entire project =)
 
 ## Installation
 

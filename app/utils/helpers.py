@@ -53,7 +53,7 @@ def get_date_from_timestamp(timestamp):
         return timestamp
 
     ts = timestamp.strip()
-    if ts.endswith("Z"):
+    if ts.endswith("Z") or ts.endswith("z"):
         ts = ts[:-1] + "+00:00"
     try:
         dt = datetime.fromisoformat(ts)
@@ -142,6 +142,9 @@ def _b32decode_nopad(s: str) -> bytes:
     return base64.b32decode(s + pad)
 
 def generate_token(bytes_len: int, token_length: Optional[int] = None) -> str:
+    if token_length is not None:
+        min_bytes = (token_length * 5 + 7) // 8  # ceil division
+        bytes_len = max(bytes_len, min_bytes)
     return _b32(os.urandom(bytes_len), token_length)
 
 def pseudonymize_data(data: str, length: int) -> str:

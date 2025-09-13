@@ -189,18 +189,18 @@ def format_history_entry(entry, colored):
 
     if op == 'added':
         if colored:
-            return color_text(f"{timestamp}: + {t(key)}: {value}", '94')
+            return color_text(f"- {timestamp}: + {t(key)}: {value}", '94')
         else:
-            return f"{timestamp}: + {t(key)}: {value}"
+            return f"- {timestamp}: + {t(key)}: {value}"
     if op == 'removed':
         if colored:
-            return color_text(f"{timestamp}: - {t(key)}: {old_value}", '94')
+            return color_text(f"- {timestamp}: - {t(key)}: {old_value}", '94')
         else:
-            return f"{timestamp}: - {t(key)}: {old_value}"
+            return f"- {timestamp}: - {t(key)}: {old_value}"
     if op == 'changed':
         if colored:
             return (
-                f"{color_text(f'{timestamp}: ≠ {t(key)}:', '94')} "
+                f"{color_text(f'- {timestamp}: ≠ {t(key)}:', '94')} "
                 f"{color_text(old_value, '91')} "
                 f"{color_text('->', '94')} "
                 f"{color_text(value, '92')}"

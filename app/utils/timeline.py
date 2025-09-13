@@ -56,7 +56,7 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
             continue
 
         if key_normalized == normalize_str("Delivery Window") and first_delivery_window:
-            if not entry["old_value"] in ['None', 'N/A', '']:
+            if entry["old_value"] not in ['None', 'N/A', '']:
                 timeline.append(
                     {
                        "timestamp": startdate,
@@ -66,7 +66,7 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
                 )
                 first_delivery_window = False
 
-        if normalize_str(key) not in TIMELINE_WHITELIST_NORMALIZED:
+        if key_normalized not in TIMELINE_WHITELIST_NORMALIZED:
             continue
 
         timeline.append(entry)
@@ -154,12 +154,13 @@ def print_timeline(order_id: int, detailed_order: Dict[str, Any]) -> None:
     printed_keys: set[str] = set()
     for entry in timeline:
         key = entry.get("key", "")
+        normalized_key = normalize_str(key)
         msg_parts = []
-        if key in printed_keys:
+        if normalized_key in printed_keys:
             msg_parts.append(t("new") + " ")
         msg_parts.append(t(key))
         if entry.get("value"):
             msg_parts.append(f": {entry['value']}")
         msg = "".join(msg_parts)
         print(f"- {entry.get('timestamp')}: {msg}")
-        printed_keys.add(key)
+        printed_keys.add(normalized_key)
