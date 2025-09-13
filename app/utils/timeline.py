@@ -7,16 +7,16 @@ from app.utils.history import get_history_of_order
 from app.utils.locale import t
 
 TIMELINE_WHITELIST = {
-    t('Reservation'),
-    t('Order Booked'),
+    'Reservation',
+    'Order Booked',
     'Delivery Window',
-    t('Expected Registration Date'),
-    t('ETA to Delivery Center'),
-    t('Delivery Appointment Date'),
-    t('VIN'),
-    t('Order Status'),
-    t('CAR BUILT'),
-    t('Vehicle Odometer')
+    'Expected Registration Date',
+    'ETA to Delivery Center',
+    'Delivery Appointment Date',
+    'VIN',
+    'Order Status',
+    'CAR BUILT',
+    'Vehicle Odometer'
 }
 TIMELINE_WHITELIST_NORMALIZED = {normalize_str(key) for key in TIMELINE_WHITELIST}
 
@@ -42,25 +42,25 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
         key = entry["key"]
         key_normalized = normalize_str(key)
 
-        if key_normalized == t("Vehicle Odometer"):
+        if key_normalized == normalize_str("Vehicle Odometer"):
             if new_car or entry.get("value") in [None, "", "N/A"]:
                 continue
             timeline.append(
                 {
                    "timestamp": entry["timestamp"],
-                   "key": t("CAR BUILT"),
+                   "key": "CAR BUILT",
                    "value": "",
                 }
             )
             new_car = True
             continue
 
-        if key_normalized == t("Delivery Window") and first_delivery_window:
+        if key_normalized == normalize_str("Delivery Window") and first_delivery_window:
             if not entry["old_value"] in ['None', 'N/A', '']:
                 timeline.append(
                     {
                        "timestamp": startdate,
-                       "key": t("Delivery Window"),
+                       "key": "Delivery Window",
                        "value": entry["old_value"],
                     }
                 )
@@ -114,30 +114,30 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
 
 
     if registration_data.get('expectedRegDate'):
-        if not is_order_key_in_timeline(timeline_from_history, t('Expected Registration Date')):
+        if not is_order_key_in_timeline(timeline_from_history, 'Expected Registration Date'):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(registration_data.get("expectedRegDate")),
-                    "key": t("Expected Registration Date"),
+                    "key": "Expected Registration Date",
                     "value": "",
                 }
             )
         
     if final_payment_data.get('etaToDeliveryCenter'):
-        if not is_order_key_in_timeline(timeline_from_history, t('ETA To Delivery Center')):
+        if not is_order_key_in_timeline(timeline_from_history, 'ETA To Delivery Center'):
             timeline.append(
                 {
                     "timestamp": get_date_from_timestamp(final_payment_data.get("etaToDeliveryCenter")),
-                    "key": t("ETA To Delivery Center"),
+                    "key": "ETA To Delivery Center",
                     "value": "",
                 }
             )
         
     if scheduling.get('deliveryAppointmentDate'):
-        if not is_order_key_in_timeline(timeline_from_history, t('Delivery Appointment Date')):
+        if not is_order_key_in_timeline(timeline_from_history, 'Delivery Appointment Date'):
             timeline.append({
                 "timestamp": get_date_from_timestamp(scheduling.get("deliveryAppointmentDate")),
-                "key": t("Delivery Appointment Date"),
+                "key": "Delivery Appointment Date",
                 "value": "",
             })
 

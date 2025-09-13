@@ -27,15 +27,15 @@ def decode_option_codes(option_string: str):
         return []
 
     excluded_codes = {'MDL3', 'MDLY', 'MDLX', 'MDLS'}
-    codes = sorted(
-        c.strip().upper() for c in option_string.split(',') 
+    codes = sorted({
+        c.strip().upper() for c in option_string.split(',')
         if c.strip() and c.strip().upper() not in excluded_codes
-    )
+    )}
 
-
-
-    return [(code, OPTION_CODES.get(code, t("Unknown option code"))) for code in codes]
-
+    return [
+        (code, OPTION_CODES.get(code, t("Unknown option code")))
+        for code in codes
+    ]
 def get_date_from_timestamp(timestamp):
     """Truncates an ISO-8601 timestamp to its date component.
 
@@ -45,6 +45,9 @@ def get_date_from_timestamp(timestamp):
     function now supports fractional seconds and timezone offsets. If parsing
     fails, the original value is returned unchanged.
     """
+
+    if not isinstance(timestamp, str):
+        return timestamp
 
     if not timestamp or timestamp == "N/A":
         return timestamp
