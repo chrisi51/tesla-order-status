@@ -41,6 +41,8 @@ WINDOWS_LANG_MAP = {
     # seen in the wild
     "english": "en",
     "german": "de",
+    "finnish": "fi",
+    "greek": "el",
     "polish": "pl",
     "spanish": "es",
     "swedish": "sv",
@@ -57,6 +59,9 @@ WINDOWS_REGION_MAP = {
     "austria": "AT",
     "switzerland": "CH",
     "sweden": "SE",
+    "belgium": "BE",
+    "finland": "FI",
+    "greece": "GR",
     "united states": "US",
     "poland": "PL",
     "spain": "ES",
@@ -73,6 +78,8 @@ LANG_DEFAULT_REGION = {
     "en": "US",
     "de": "DE",
     "es": "ES",
+    "fi": "FI",
+    "el": "GR",
     "sv": "SE",
     "pl": "PL",
 }
