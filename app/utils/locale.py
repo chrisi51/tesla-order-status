@@ -6,7 +6,8 @@ import locale
 import os
 from pathlib import Path
 
-from app.config import PUBLIC_DIR, cfg as Config
+from app.config import PUBLIC_DIR, SETTINGS_FILE, cfg as Config
+from app.utils.helpers import color_text
 
 LANG_DIR = PUBLIC_DIR / "lang"
 DEFAULT_LANG = "en"
@@ -233,7 +234,22 @@ def get_os_locale() -> Optional[str]:
     return None
 
 
-LANGUAGE = Config.get("language") or get_os_locale() or DEFAULT_LANG
+LANGUAGE = Config.get("language")
+if not LANGUAGE:
+    os_lang = get_os_locale()
+    if os_lang:
+        lang_code = os_lang.split("_")[0].lower()
+        if (LANG_DIR / f"{lang_code}.json").exists():
+            LANGUAGE = lang_code
+            print(f"\n{color_text(f'System language detected. Using "{lang_code}" instead of "{DEFAULT_LANG}"', '93')}")
+            print(f"{color_text(f'You can change it in your {SETTINGS_FILE}', '93')}")
+            print()
+            Config.set("language", LANGUAGE)
+        else:
+            LANGUAGE = DEFAULT_LANG
+    else:
+        LANGUAGE = DEFAULT_LANG
+
 TRANSLATIONS = _load_translations(LANGUAGE)
 
 def set_language(lang: str) -> None:

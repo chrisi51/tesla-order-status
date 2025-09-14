@@ -60,6 +60,8 @@ can be combined with Output Modes
 ### General Settings
 The script stores the configuration in `data/private/settings.json`. You can change the settings on your own risk.
 If the config becomes invalid, it will be reset to the default values.
+
+On the first run the script detects your system language and stores it as `language` in the settings file. You can change this entry to override the language. If no translation is available for your system language, the setting is omitted so a future translation can be picked up automatically.
 ### Option Codes
 In the folder `option-codes` all known tesla option codes are stored. You can put in your own json files to extend the list. Files get loaded in alphabetic order and last occurence of any option codes win.
 
