@@ -4,12 +4,15 @@ from typing import Optional
 
 import locale
 import os
-
+import sys
 from app.config import PUBLIC_DIR, SETTINGS_FILE, cfg as Config
-from app.utils.helpers import color_text
+from app.utils.colors import color_text
 
 LANG_DIR = PUBLIC_DIR / "lang"
 DEFAULT_LANG = "en"
+
+# Determine if we're running in status mode early to avoid banner prints (can't just import params.py cause of looping)
+STATUS_MODE = "--status" in sys.argv
 
 def _load_translations(lang: str) -> dict:
     """Load translation mappings for *lang* with English fallback."""

@@ -305,7 +305,8 @@ def main(access_token) -> None:
     track_usage(old_orders)
 
     if CACHED_MODE:
-        print(color_text(t("Running in CACHED MODE... no API calls are made"), '93'))
+        if not STATUS_MODE:
+            print(color_text(t("Running in CACHED MODE... no API calls are made"), '93'))
 
         if old_orders:
             if STATUS_MODE:
@@ -315,7 +316,8 @@ def main(access_token) -> None:
             else:
                 display_orders(old_orders)
 
-            print_bottom_line()
+            if not STATUS_MODE:
+                print_bottom_line()
         else:
             if STATUS_MODE:
                 print("-1")
