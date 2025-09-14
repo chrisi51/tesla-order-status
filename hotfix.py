@@ -21,7 +21,7 @@ ZIP_URL = "https://github.com/chrisi51/tesla-order-status/archive/refs/heads/mai
 def main() -> None:
     print("This script will just overwrite your installation with the most recent version.")
     print("It can be used, if your installation and even the autoupdater is broken to fix the installation.")
-    print("As long as the autoupdater is working, there is no need, to use this script but it also should not damage your installation in any way").
+    print("As long as the autoupdater is working, there is no need, to use this script but it also should not damage your installation in any way.")
     answer = input(
         "You want to proceed the hotfix update? (y/n): "
     ).strip().lower()
@@ -30,7 +30,7 @@ def main() -> None:
         sys.exit(1)
 
 
-    print("Downloading latest files...")
+    print("\nDownloading latest files...")
     try:
         with urllib.request.urlopen(ZIP_URL, timeout=10) as resp:
             data = resp.read()
@@ -50,13 +50,13 @@ def main() -> None:
                     shutil.copytree(item, target, dirs_exist_ok=True)
                 else:
                     shutil.copy2(item, target)
-        print("Hotfix applied. Please rerun tesla_order_status.py")
-        print("If the problem persists, please create an issue including the complete output of tesla_order_status.py")
+        print("...Hotfix applied. Please rerun tesla_order_status.py")
+        print("\nIf the problem persists, please create an issue including the complete output of tesla_order_status.py")
         print("GitHub Issues: https://github.com/chrisi51/tesla-order-status/issues")
 
     except Exception as e:  # noqa: BLE001 - best effort, minimal deps
-        print(f"Hotfix failed: {e}")
-        print("If the problem persists, please create an issue including the complete output of hotfix.py")
+        print(f"...Hotfix failed: {e}")
+        print("\nIf the problem persists, please create an issue including the complete output of hotfix.py")
         print("GitHub Issues: https://github.com/chrisi51/tesla-order-status/issues")
         sys.exit(1)
 
