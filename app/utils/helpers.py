@@ -113,10 +113,10 @@ def compare_dicts(old_dict, new_dict, path=""):
             if old_value != new_value:
                 differences.append(
                 {
-                    'operation': 'changed',
-                    'key': path + key,
-                    'old_value': old_value,
-                    'value': new_value
+                    "operation": "changed",
+                    "key": path + key,
+                    "old_value": old_value,
+                    "value": new_value,
                 }
             )
 
@@ -124,9 +124,9 @@ def compare_dicts(old_dict, new_dict, path=""):
         if key not in old_dict:
             differences.append(
                 {
-                    'operation': 'added',
-                    'key': path + key,
-                    'value': clean_str(new_dict[key])
+                    "operation": "added",
+                    "key": path + key,
+                    "value": clean_str(new_dict[key]),
                 }
             )
 
