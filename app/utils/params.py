@@ -3,14 +3,15 @@ import os
 import time
 
 from app.config import ORDERS_FILE
+from app.utils.locale import t
 
 parser = argparse.ArgumentParser(description="Retrieve Tesla order status.")
 group = parser.add_mutually_exclusive_group()
-group.add_argument("--status", action="store_true", help="Only report whether there are changes since the last check.")
-group.add_argument("--share", action="store_true", help="Hide personal data like Order ID and VIN for sharing.")
-group.add_argument("--details", action="store_true", help="Show additional details such as financing information.")
-group.add_argument("--all", action="store_true", help="Show ALL keys in your history (potentially spammy output)")
-parser.add_argument("--cached", action="store_true", help="Use locally cached data without contacting the API.")
+group.add_argument("--status", action="store_true", help=t("HELP PARAM STATUS"))
+group.add_argument("--share", action="store_true", help=t("HELP PARAM SHARE"))
+group.add_argument("--details", action="store_true", help=t("HELP PARAM DETAILS"))
+group.add_argument("--all", action="store_true", help=t("HELP PARAM ALL"))
+parser.add_argument("--cached", action="store_true", help=t("HELP PARAM CACHED"))
 
 _args, _ = parser.parse_known_args()
 

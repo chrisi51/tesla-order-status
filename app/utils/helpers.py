@@ -6,8 +6,9 @@ import os
 import sys
 from datetime import datetime
 from typing import Any, Optional
-from app.utils.params import STATUS_MODE
 from app.utils.colors import color_text
+from app.utils.locale import t
+from app.utils.params import STATUS_MODE
 from app.config import OPTION_CODES, cfg as Config
 
 
@@ -22,16 +23,19 @@ def exit_with_status(msg: str) -> None:
 
 def decode_option_codes(option_string: str):
     """Return a list of tuples with (code, description)."""
-    if not option_string:
+    if not isinstance(option_string, str) or not option_string:
         return []
 
-    codes = sorted(
-        c.strip().upper() for c in option_string.split(',') if c.strip()
-    )
+    excluded_codes = {'MDL3', 'MDLY', 'MDLX', 'MDLS'}
+    codes = sorted({
+        c.strip().upper() for c in option_string.split(',')
+        if c.strip() and c.strip().upper() not in excluded_codes
+    })
 
-    return [(code, OPTION_CODES.get(code, "Unknown option code")) for code in codes]
-
-
+    return [
+        (code, OPTION_CODES.get(code, t("Unknown option code")))
+        for code in codes
+    ]
 def get_date_from_timestamp(timestamp):
     """Truncates an ISO-8601 timestamp to its date component.
 
@@ -42,11 +46,14 @@ def get_date_from_timestamp(timestamp):
     fails, the original value is returned unchanged.
     """
 
-    if not timestamp or timestamp == "N/A":
+    if not isinstance(timestamp, str):
+        return timestamp
+
+    if not timestamp or timestamp.upper() == "N/A":
         return timestamp
 
     ts = timestamp.strip()
-    if ts.endswith("Z"):
+    if ts.endswith("Z") or ts.endswith("z"):
         ts = ts[:-1] + "+00:00"
     try:
         dt = datetime.fromisoformat(ts)
@@ -106,10 +113,10 @@ def compare_dicts(old_dict, new_dict, path=""):
             if old_value != new_value:
                 differences.append(
                 {
-                    'operation': 'changed',
-                    'key': path + key,
-                    'old_value': old_value,
-                    'value': new_value
+                    "operation": "changed",
+                    "key": path + key,
+                    "old_value": old_value,
+                    "value": new_value,
                 }
             )
 
@@ -117,9 +124,9 @@ def compare_dicts(old_dict, new_dict, path=""):
         if key not in old_dict:
             differences.append(
                 {
-                    'operation': 'added',
-                    'key': path + key,
-                    'value': clean_str(new_dict[key])
+                    "operation": "added",
+                    "key": path + key,
+                    "value": clean_str(new_dict[key]),
                 }
             )
 
@@ -135,6 +142,9 @@ def _b32decode_nopad(s: str) -> bytes:
     return base64.b32decode(s + pad)
 
 def generate_token(bytes_len: int, token_length: Optional[int] = None) -> str:
+    if token_length is not None:
+        min_bytes = (token_length * 5 + 7) // 8  # ceil division
+        bytes_len = max(bytes_len, min_bytes)
     return _b32(os.urandom(bytes_len), token_length)
 
 def pseudonymize_data(data: str, length: int) -> str:

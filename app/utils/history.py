@@ -4,6 +4,7 @@ import os
 from app.config import HISTORY_FILE, TODAY
 from app.utils.colors import color_text
 from app.utils.helpers import get_date_from_timestamp, pretty_print
+from app.utils.locale import t
 from app.utils.params import DETAILS_MODE, SHARE_MODE, ALL_KEYS_MODE
 
 
@@ -94,14 +95,18 @@ HISTORY_TRANSLATIONS_DETAILS = {
 
 def load_history_from_file():
     if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, 'r') as f:
-            history = json.load(f)
-        return history
+       try:
+           with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+               history = json.load(f)
+           return history
+       except (OSError, json.JSONDecodeError):
+           return []
     return []
 
 
 def save_history_to_file(history):
-    with open(HISTORY_FILE, 'w') as f:
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(history, f)
 
 
@@ -112,7 +117,9 @@ def get_history_of_order(order_id):
     if history:
         for entry in history:
             for change in entry['changes']:
-                key = change.get('key', '')
+                key = change.get('key')
+                if not isinstance(key, str):
+                    continue
 
                 # Skip if not matching order_id
                 key_parts = key.split('.', 1)
@@ -165,13 +172,14 @@ def _format_value(value):
     if isinstance(value, (list, dict)):
         if DETAILS_MODE or ALL_KEYS_MODE:
             return f"\n {pretty_print(value)}"
-        return "Too much data - only available in --details view"
+        return t("Too much data - only available in --details view")
     return value
 
-def print_history(order_id: str) -> None:
+def print_history(order_id: int) -> None:
     history = get_history_of_order(order_id)
     if history:
-        print(color_text("\nChange History:", '94'))
+        print("\n")
+        print(color_text(t("Change History") + ':', '94'))
         for change in history:
             msg = format_history_entry(change, change['timestamp'] == TODAY)
             print(msg)
@@ -187,22 +195,22 @@ def format_history_entry(entry, colored):
 
     if op == 'added':
         if colored:
-            return color_text(f"{timestamp}: + {key}: {value}", '94')
+            return color_text(f"- {timestamp}: + {t(key)}: {value}", '94')
         else:
-            return f"{timestamp}: + {key}: {value}"
+            return f"- {timestamp}: + {t(key)}: {value}"
     if op == 'removed':
         if colored:
-            return color_text(f"{timestamp}: - {key}: {old_value}", '94')
+            return color_text(f"- {timestamp}: - {t(key)}: {old_value}", '94')
         else:
-            return f"{timestamp}: - {key}: {old_value}"
+            return f"- {timestamp}: - {t(key)}: {old_value}"
     if op == 'changed':
         if colored:
             return (
-                f"{color_text(f'{timestamp}: ≠ {key}:', '94')} "
+                f"{color_text(f'- {timestamp}: ≠ {t(key)}:', '94')} "
                 f"{color_text(old_value, '91')} "
                 f"{color_text('->', '94')} "
                 f"{color_text(value, '92')}"
             )
         else:
-            return f"{timestamp}: ≠ {key}: {old_value} -> {value}"
-    return f"{op} {key}"
+            return f"- {timestamp}: ≠ {t(key)}: {old_value} -> {value}"
+    return f"{op} {t(key)}"

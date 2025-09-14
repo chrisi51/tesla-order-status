@@ -1,11 +1,11 @@
-import json
+import webbrowser
 from typing import List, Dict
 
 from app.config import TELEMETRIC_URL, cfg as Config
 from app.utils.helpers import pseudonymize_data
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE, ALL_KEYS_MODE
 from app.utils.connection import request_with_retry
-from app.utils.locale import get_os_locale
+from app.utils.locale import t, get_os_locale
 
 def ensure_telemetry_consent() -> None:
     """Ask user for tracking consent if not already given."""
@@ -23,15 +23,19 @@ def ensure_telemetry_consent() -> None:
 
 def ask_for_telemetry_consent() -> None:
     answer = input(
-        "Do you allow collection of non-personalised usage data to improve the script (check the README.md for details)? (y/n): "
+        t("Do you allow collection of non-personalised usage data to improve the script (press d for details)? (y/n/d): ")
     ).strip().lower()
+    if answer == "d":
+        webbrowser.open("https://github.com/chrisi51/tesla-order-status?tab=readme-ov-file#telemetry")
+        ask_for_telemetry_consent()
+        return
     consent = answer == "y"
     Config.set("telemetry-consent", consent)
     if answer == "y":
-        print(f"Telemetry enabled. Thank you so much for your support, bro.")
+        print(t("Telemetry enabled. Thank you so much for your support, bro."))
     else:
-        print("Naww, I've counted on you! =( I may ask again later, OK? =) ")
-        input("Telemetry disabled. (ENTER): ")
+        print(t("Naww, I've counted on you! =( I may ask again later, OK? =)"))
+        input(t("Telemetry disabled. (ENTER): "))
 
 
 def track_usage(orders: List[dict]) -> None:
@@ -74,6 +78,7 @@ def track_usage(orders: List[dict]) -> None:
     }
 
     try:
-        request_with_retry(TELEMETRIC_URL, json=data, max_retries=3)
+        request_with_retry(TELEMETRIC_URL, json=data, max_retries=3, exit_on_error=False)
     except Exception:
+        # Telemetry failures should not impact the main application flow
         pass
