@@ -9,6 +9,7 @@ installation.
 
 import shutil
 import sys
+import traceback
 import tempfile
 import urllib.request
 import zipfile
@@ -55,7 +56,8 @@ def main() -> None:
         print("GitHub Issues: https://github.com/chrisi51/tesla-order-status/issues")
 
     except Exception as e:  # noqa: BLE001 - best effort, minimal deps
-        print(f"...Hotfix failed: {e}")
+        print(f"...Hotfix failed: {e}\n")
+        traceback.print_exc()
         print("\nIf the problem persists, please create an issue including the complete output of hotfix.py")
         print("GitHub Issues: https://github.com/chrisi51/tesla-order-status/issues")
         sys.exit(1)
