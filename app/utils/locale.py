@@ -245,7 +245,11 @@ else:
             lang_code = os_lang.split("_")[0].lower()
             if (LANG_DIR / f"{lang_code}.json").exists():
                 LANGUAGE = lang_code
-                print(f"\n{color_text(f'System language detected. Using "{lang_code}" instead of "{DEFAULT_LANG}"', '93')}")
+                message = (
+                    f'System language detected. Using "{lang_code}" '
+                    f'instead of "{DEFAULT_LANG}"'
+                )
+                print(f"\n{color_text(message, '93')}")
                 print(f"{color_text(f'You can change it in your {SETTINGS_FILE}', '93')}")
                 print()
                 Config.set("language", LANGUAGE)
