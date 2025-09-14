@@ -6,7 +6,6 @@ from typing import Any, List
 from app.config import PRIVATE_DIR
 from app.utils.connection import request_with_retry
 from app.utils.colors import color_text
-from app.utils.helpers import pretty_print
 
 BANNER_GET_URL = "https://www.tesla-order-status-tracker.de/get/banner.php"
 BANNER_PUSH_CLICK_URL = "https://www.tesla-order-status-tracker.de/push/banner_clicked.php"
@@ -42,7 +41,7 @@ def _fetch_banner(seen: List[int]) -> dict[str, Any]:
         return {}
 
 
-def _send_banner_clicked(uid) -> None:
+def _send_banner_clicked(uid) -> dict[Any, Any] | Any:
     try:
         data = {
             "uid": uid

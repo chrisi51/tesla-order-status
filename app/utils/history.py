@@ -169,7 +169,7 @@ def _format_value(value):
         return t("Too much data - only available in --details view")
     return value
 
-def print_history(order_id: str) -> None:
+def print_history(order_id: int) -> None:
     history = get_history_of_order(order_id)
     if history:
         print("\n")

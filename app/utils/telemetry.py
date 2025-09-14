@@ -1,4 +1,3 @@
-import json
 import webbrowser
 from typing import List, Dict
 

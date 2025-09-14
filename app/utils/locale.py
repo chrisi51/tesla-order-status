@@ -4,7 +4,6 @@ from typing import Optional
 
 import locale
 import os
-from pathlib import Path
 
 from app.config import PUBLIC_DIR, SETTINGS_FILE, cfg as Config
 from app.utils.helpers import color_text

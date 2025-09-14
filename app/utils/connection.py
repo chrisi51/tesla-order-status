@@ -82,3 +82,4 @@ def request_with_retry(url, headers=None, data=None, json=None, max_retries=3, e
                 else:
                     raise RuntimeError(_STATUS_TEXTS['5xx'])
             time.sleep(2 ** attempt)
+    return None

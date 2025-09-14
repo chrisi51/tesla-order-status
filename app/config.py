@@ -3,12 +3,12 @@ import json
 import re
 import time
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any
 
 # -------------------------
 # Constants
 # -------------------------
-APP_VERSION = '9.99.9-9999' # we can use a dummy version here, as the API does not check it strictly
+APP_VERSION = '9.99.9-9999' # we can use a fake version here, as the API does not check it strictly
 TODAY = time.strftime('%Y-%m-%d')
 TELEMETRIC_URL = "https://www.tesla-order-status-tracker.de/push/telemetry.php"
 

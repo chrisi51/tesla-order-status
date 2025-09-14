@@ -3,14 +3,13 @@ import json
 import os
 import re
 import sys
-from typing import List, Dict, Any, Callable
 try:
     import pyperclip
     HAS_PYPERCLIP = True
 except ImportError:
     HAS_PYPERCLIP = False
 
-from app.config import APP_VERSION, HISTORY_FILE, ORDERS_FILE, TESLA_STORES, TODAY
+from app.config import APP_VERSION, ORDERS_FILE, TESLA_STORES, TODAY
 from app.utils.colors import color_text, strip_color
 from app.utils.connection import request_with_retry
 from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts
@@ -113,9 +112,6 @@ def _render_share_output(detailed_orders):
         order = detailed_order['order']
         order_details = detailed_order['details']
         scheduling = order_details.get('tasks', {}).get('scheduling', {})
-        registration_data = order_details.get('tasks', {}).get('registration', {})
-        order_info = registration_data.get('orderDetails', {})
-        final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
 
         model = paint = interior = "unknown"
 
@@ -179,7 +175,7 @@ def display_orders_SHARE_MODE(detailed_orders):
 
 def display_orders(detailed_orders):
     if HAS_PYPERCLIP:
-        share_output = generate_share_output(detailed_orders)
+        generate_share_output(detailed_orders)
 
     order_number = 0
     for detailed_order in detailed_orders:

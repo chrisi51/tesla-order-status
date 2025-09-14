@@ -24,7 +24,7 @@ import sys
 import shutil
 import tempfile
 
-from app.config import APP_DIR, BASE_DIR, PRIVATE_DIR, PUBLIC_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE, cfg as Config
+from app.config import APP_DIR, BASE_DIR, PUBLIC_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE, cfg as Config
 from app.utils.colors import color_text
 from app.utils.helpers import exit_with_status
 from app.utils.locale import t
@@ -140,8 +140,6 @@ def perform_update(url: str = ZIP_URL, timeout: int = REQUEST_TIMEOUT) -> bool:
     else:
         print(0)
         sys.exit()
-
-    return True
 
 
 def ask_for_update():
