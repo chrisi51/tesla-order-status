@@ -12,7 +12,7 @@ except ImportError:
 from app.config import APP_VERSION, ORDERS_FILE, TESLA_STORES, TODAY
 from app.utils.colors import color_text, strip_color
 from app.utils.connection import request_with_retry
-from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts
+from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts, exit_with_status
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
 from app.utils.locale import t, LANGUAGE, use_default_language
 import app.utils.history as history_module
@@ -30,10 +30,7 @@ def _get_all_orders(access_token):
         order_details = _retrieve_order_details(order_id, access_token)
 
         if not order_details or not order_details.get('tasks'):
-            print(color_text(t("Error: Received empty response from Tesla API. Please try again later."), '91'))
-            if STATUS_MODE:
-                print("-1")
-            sys.exit(1)
+            exit_with_status(t("Error: Received empty response from Tesla API. Please try again later."))
 
         detailed_order = {
             'order': order,
@@ -362,5 +359,5 @@ def main(access_token) -> None:
         else:
             display_orders(new_orders)
 
-    print_bottom_line()
+        print_bottom_line()
 
