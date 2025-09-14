@@ -235,3 +235,20 @@ def get_os_locale() -> Optional[str]:
 
 LANGUAGE = Config.get("language") or get_os_locale() or DEFAULT_LANG
 TRANSLATIONS = _load_translations(LANGUAGE)
+
+def set_language(lang: str) -> None:
+    """Set active *lang* and reload translations."""
+    global LANGUAGE, TRANSLATIONS
+    LANGUAGE = lang
+    TRANSLATIONS = _load_translations(lang)
+
+
+class use_default_language:
+    """Context manager to temporarily force DEFAULT_LANG translations."""
+
+    def __enter__(self):
+        self._previous = LANGUAGE
+        set_language(DEFAULT_LANG)
+
+    def __exit__(self, exc_type, exc, tb):
+        set_language(self._previous)

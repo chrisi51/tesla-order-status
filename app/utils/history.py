@@ -58,8 +58,8 @@ HISTORY_TRANSLATIONS = {
     'details.tasks.registration.orderDetails.reservationDate': 'Reservation Date',
     'details.tasks.registration.orderDetails.orderBookedDate': 'Order Booked Date',
     'details.tasks.registration.orderDetails.vehicleOdometer': 'Vehicle Odometer',
-    'order.modelCode': t('Model'),
-    'order.mktOptions': t('Configuration')
+    'order.modelCode': 'Model',
+    'order.mktOptions': 'Configuration'
 }
 
 HISTORY_TRANSLATIONS_ANONYMOUS = {

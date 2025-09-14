@@ -15,7 +15,7 @@ from app.utils.colors import color_text, strip_color
 from app.utils.connection import request_with_retry
 from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
-from app.utils.locale import t, LANGUAGE
+from app.utils.locale import t, LANGUAGE, use_default_language
 import app.utils.history as history_module
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.telemetry import track_usage
@@ -105,7 +105,7 @@ def get_model_from_order(detailed_order) -> str:
                model = value.strip()
                break
 
-   return model
+    return model
 
 def _render_share_output(detailed_orders):
     order_number = 0
@@ -157,7 +157,9 @@ def generate_share_output(detailed_orders):
     original_stdout = sys.stdout
     sys.stdout = output_capture
     try:
-        _render_share_output(detailed_orders)
+        with use_default_language():
+            _render_share_output(detailed_orders)
+
     finally:
         sys.stdout = original_stdout
         history_module.SHARE_MODE = original_share_mode
