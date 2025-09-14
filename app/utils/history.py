@@ -95,14 +95,18 @@ HISTORY_TRANSLATIONS_DETAILS = {
 
 def load_history_from_file():
     if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, 'r') as f:
-            history = json.load(f)
-        return history
+       try:
+           with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+               history = json.load(f)
+           return history
+       except (OSError, json.JSONDecodeError):
+           return []
     return []
 
 
 def save_history_to_file(history):
-    with open(HISTORY_FILE, 'w') as f:
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(history, f)
 
 
@@ -113,7 +117,9 @@ def get_history_of_order(order_id):
     if history:
         for entry in history:
             for change in entry['changes']:
-                key = change.get('key', '')
+                key = change.get('key')
+                if not isinstance(key, str):
+                    continue
 
                 # Skip if not matching order_id
                 key_parts = key.split('.', 1)
