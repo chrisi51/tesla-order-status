@@ -39,9 +39,14 @@ FILES_TO_CHECK: List[Path] = [
     OPTION_CODES_FOLDER / "000_teslahunt.json",
     OPTION_CODES_FOLDER / "050_directlease.json",
     OPTION_CODES_FOLDER / "100_chrisi51.json",
+    PRIVATE_DIR / "lang" / "de.json",
+    PRIVATE_DIR / "lang" / "en.json",
+    PRIVATE_DIR / "lang" / "pl.json",
+    PRIVATE_DIR / "lang" / "sv.json",
     APP_DIR / "config.py",
     APP_DIR / "update_check.py",
     APP_DIR / "utils" / "auth.py",
+    APP_DIR / "utils" / "banner.py",
     APP_DIR / "utils" / "colors.py",
     APP_DIR / "utils" / "connection.py",
     APP_DIR / "utils" / "helpers.py",
@@ -176,6 +181,11 @@ def ask_for_update_consent():
 def main() -> int:
 
     if not Config.has("update_method") or Config.get("update_method") == "":
+        if STATUS_MODE:
+            # Signal that manual intervention is required without prompting.
+            print(2)
+            sys.exit()
+
         ask_for_update_consent()
 
     if Config.get("update_method") == "block":

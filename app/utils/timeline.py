@@ -56,12 +56,13 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
             continue
 
         if key_normalized == normalize_str("Delivery Window") and first_delivery_window:
-            if entry["old_value"] not in ['None', 'N/A', '']:
+            old_value = entry.get("old_value")
+            if old_value not in ['None', 'N/A', '']:
                 timeline.append(
                     {
                        "timestamp": startdate,
                        "key": "Delivery Window",
-                       "value": entry["old_value"],
+                       "value": old_value,
                     }
                 )
                 first_delivery_window = False

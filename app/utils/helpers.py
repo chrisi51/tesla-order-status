@@ -23,7 +23,7 @@ def exit_with_status(msg: str) -> None:
 
 def decode_option_codes(option_string: str):
     """Return a list of tuples with (code, description)."""
-    if not option_string:
+    if not isinstance(option_string, str) or not option_string:
         return []
 
     excluded_codes = {'MDL3', 'MDLY', 'MDLX', 'MDLS'}
@@ -49,7 +49,7 @@ def get_date_from_timestamp(timestamp):
     if not isinstance(timestamp, str):
         return timestamp
 
-    if not timestamp or timestamp == "N/A":
+    if not timestamp or timestamp.upper() == "N/A":
         return timestamp
 
     ts = timestamp.strip()
