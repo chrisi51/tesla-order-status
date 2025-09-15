@@ -41,7 +41,7 @@ def _fetch_banner(seen: List[int]) -> dict[str, Any]:
         return {}
 
 
-def _send_banner_clicked(uid) -> dict[Any, Any] | Any:
+def _send_banner_clicked(uid) -> Any:
     try:
         data = {
             "uid": uid

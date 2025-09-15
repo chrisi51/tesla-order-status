@@ -35,6 +35,7 @@ from app.utils.params import STATUS_MODE
 # ---------------------------
 FILES_TO_CHECK: List[Path] = [
     BASE_DIR / "tesla_order_status.py",
+    BASE_DIR / "hotfix.py",
     TESLA_STORES_FILE,
     OPTION_CODES_FOLDER / "000_teslahunt.json",
     OPTION_CODES_FOLDER / "050_directlease.json",
