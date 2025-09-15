@@ -11,9 +11,15 @@ import traceback
 
 
 def main() -> None:
-    """Import and run the application modules."""
-    from app.update_check import main as run_update_check
+    # Run all migrations
     from app.utils.migration import main as run_all_migrations
+    run_all_migrations()
+
+    # Run check for updates
+    from app.update_check import main as run_update_check
+    run_update_check()
+
+    """Import and run the application modules."""
     from app.config import cfg as Config
     from app.utils.auth import main as run_tesla_auth
     from app.utils.banner import display_banner
@@ -22,9 +28,6 @@ def main() -> None:
     from app.utils.params import STATUS_MODE
     from app.utils.telemetry import ensure_telemetry_consent
 
-    # Run all migrations and check for updates at startup
-    run_all_migrations()
-    run_update_check()
 
     if not Config.has("secret"):
         Config.set("secret", generate_token(32, None))
