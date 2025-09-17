@@ -1,3 +1,18 @@
+# Introduction
+The  project is an open-source Python tool that helps Tesla customers easily check and track the status of their vehicle orders. Instead of repeatedly logging into the Tesla account or relying on third-party websites, the script provides direct access to order details via the Tesla API.
+
+Key features include:
+
+- Retrieval of the current order and delivery status
+- Display of important details (vehicle options, production and delivery progress)
+- Local tracking of your order history
+- Modular design for future extensions and custom features
+
+The goal is to give users more transparency and control over the ordering process – without depending on external services.
+
+## Contact
+meet me at https://chat.tesla-order-status-tracker.de
+
 ## Download
 Download the complete project. 
 If you don't know how to do so, just follow that link: https://github.com/chrisi51/tesla-order-status/archive/refs/heads/main.zip 
@@ -185,3 +200,5 @@ If you want to support me, you can use my link on your next tesla order =)
 https://ts.la/christian906959
 
 as this is a fork i have to say thx @ https://github.com/niklaswa/tesla-order-status for the script
+
+meet me at https://chat.tesla-order-status-tracker.de
