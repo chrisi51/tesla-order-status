@@ -49,6 +49,7 @@
   "> Orders saved to '{file}'": "Bestellungen gespeichert unter '{file}'",
   "unknown": "unbekannt",
   "new": "(neu)",
+  "removed": "entfernt",
   "Order Details": "Bestelldetails",
   "Order ID": "Auftragsnummer",
   "Status": "Status",

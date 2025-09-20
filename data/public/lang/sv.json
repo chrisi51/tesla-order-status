@@ -49,6 +49,7 @@
   "> Orders saved to '{file}'": "> Beställningar sparade i '{file}'",
   "unknown": "okänd",
   "new": "ny",
+  "removed": "borttagen",
   "Order Details": "Orderdetaljer",
   "Order ID": "Order-ID",
   "Status": "Status",

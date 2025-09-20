@@ -41,9 +41,11 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
     for entry in history:
         key = entry["key"]
         key_normalized = normalize_str(key)
+        value = entry.get("value")
+        old_value = entry.get("old_value")
 
         if key_normalized == normalize_str("Vehicle Odometer"):
-            if new_car or entry.get("value") in [None, "", "N/A"]:
+            if new_car or value in [None, "", "N/A"]:
                 continue
             timeline.append(
                 {
@@ -56,7 +58,6 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
             continue
 
         if key_normalized == normalize_str("Delivery Window") and first_delivery_window:
-            old_value = entry.get("old_value")
             if old_value not in ['None', 'N/A', '']:
                 timeline.append(
                     {
@@ -66,6 +67,9 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
                     }
                 )
                 first_delivery_window = False
+
+        if old_value != "" and value == "":
+            entry["value"] = t("removed")
 
         if key_normalized not in TIMELINE_WHITELIST_NORMALIZED:
             continue

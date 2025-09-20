@@ -49,6 +49,7 @@
   "> Orders saved to '{file}'": "> Orders saved to '{file}'",
   "unknown": "unknown",
   "new": "new",
+  "removed": "removed",
   "Order Details": "Order Details",
   "Order ID": "Order ID",
   "Status": "Status",
