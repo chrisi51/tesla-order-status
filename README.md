@@ -10,6 +10,8 @@ Key features include:
 
 The goal is to give users more transparency and control over the ordering process – without depending on external services.
 
+### NEW: If you prefer a GUI, check out my new project - first beta version is available in the community chat: https://chat.tesla-order-status-tracker.de
+
 ## Contact
 meet me at https://chat.tesla-order-status-tracker.de
 
@@ -199,6 +201,8 @@ You are always in control: telemetry is opt-in. Consent is requested on first ru
 If you want to support me, you can use my link on your next tesla order =)
 https://ts.la/christian906959
 
-as this is a fork i have to say thx @ https://github.com/niklaswa/tesla-order-status for the script
+Or just buy me a coffee => https://www.paypal.com/paypalme/chrisi51
+
+As this is a fork i have to say thx @ https://github.com/niklaswa/tesla-order-status for the initial script
 
 meet me at https://chat.tesla-order-status-tracker.de
