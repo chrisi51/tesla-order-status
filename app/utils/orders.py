@@ -329,6 +329,25 @@ def main(access_token) -> None:
     new_orders = _get_all_orders(access_token)
 
 
+    if not new_orders:
+        if old_orders:
+            if STATUS_MODE:
+                print("0")
+            else:
+                print(color_text(t("Tesla returned no active orders. Keeping previously cached data."), '93'))
+                if SHARE_MODE:
+                    display_orders_SHARE_MODE(old_orders)
+                else:
+                    display_orders(old_orders)
+                print_bottom_line()
+            return
+        if STATUS_MODE:
+            print("-1")
+        else:
+            print(color_text(t("Tesla returned no active orders. Nothing to display yet."), '93'))
+        return
+
+
     if old_orders:
         differences = _compare_orders(old_orders, new_orders)
         if differences:
@@ -360,4 +379,3 @@ def main(access_token) -> None:
             display_orders(new_orders)
 
         print_bottom_line()
-
