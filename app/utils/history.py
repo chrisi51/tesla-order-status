@@ -149,9 +149,7 @@ def get_history_of_order(order_id):
 
                     if not DETAILS_MODE:
                         if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
-                            if entry['timestamp'] != TODAY:
-                                continue
-
+                            continue
 
                     # translate if key is known
                     if key in HISTORY_TRANSLATIONS_DETAILS:
