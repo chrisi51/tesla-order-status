@@ -11,6 +11,7 @@ BANNER_GET_URL = "https://www.tesla-order-status-tracker.de/get/banner.php"
 BANNER_PUSH_CLICK_URL = "https://www.tesla-order-status-tracker.de/push/banner_clicked.php"
 BANNER_FILE = PRIVATE_DIR / "banner_seen.json"
 _DISPLAYED = False
+_PLATFORM = "script"
 
 
 def _load_seen() -> List[int]:
@@ -33,7 +34,8 @@ def _save_seen(seen: List[int]) -> None:
 def _fetch_banner(seen: List[int]) -> dict[str, Any]:
     try:
         data = {
-            "seen": seen
+            "seen": seen,
+            "platform": _PLATFORM,
         }
         response = request_with_retry(BANNER_GET_URL, json=data, max_retries=3, exit_on_error=False)
         return response.json()
@@ -44,7 +46,8 @@ def _fetch_banner(seen: List[int]) -> dict[str, Any]:
 def _send_banner_clicked(uid) -> Any:
     try:
         data = {
-            "uid": uid
+            "uid": uid,
+            "platform": _PLATFORM,
         }
         response = request_with_retry(BANNER_PUSH_CLICK_URL, json=data, max_retries=3, exit_on_error=False)
         return response.json()
@@ -63,6 +66,21 @@ def wrap_with_linebreaks(text, width=60):
     return "\n".join(wrapped_lines)
 
 
+def _banner_targets_script(banner: dict[str, Any]) -> bool:
+    """Return True when the banner is allowed to be shown in the Python script."""
+    if not banner:
+        return False
+    flag_value = banner.get(_PLATFORM)
+    if flag_value is None:
+        return True
+    if isinstance(flag_value, bool):
+        return flag_value
+    try:
+        return int(flag_value) == 1
+    except (TypeError, ValueError):
+        return False
+
+
 def display_banner() -> None:
     """Fetch and display a banner if available."""
     global _DISPLAYED
@@ -74,6 +92,8 @@ def display_banner() -> None:
     banner = _fetch_banner(seen)
     uid = banner.get("id") if banner else None
     if not banner or uid is None:
+        return
+    if not _banner_targets_script(banner):
         return
 
     title = banner.get("title", "")
