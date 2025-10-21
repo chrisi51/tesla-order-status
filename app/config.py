@@ -1,9 +1,8 @@
-from glob import glob
 import json
 import re
 import time
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 # -------------------------
 # Constants
@@ -11,6 +10,7 @@ from typing import Dict, Any
 APP_VERSION = '9.99.9-9999' # we can use a fake version here, as the API does not check it strictly
 TODAY = time.strftime('%Y-%m-%d')
 TELEMETRIC_URL = "https://www.tesla-order-status-tracker.de/push/telemetry.php"
+VERSION = "p1.0.0"
 
 # -------------------------
 # Directory structure (new)
@@ -24,7 +24,6 @@ PRIVATE_DIR = DATA_DIR / "private"
 TOKEN_FILE = PRIVATE_DIR / 'tesla_tokens.json'
 ORDERS_FILE = PRIVATE_DIR / 'tesla_orders.json'
 HISTORY_FILE = PRIVATE_DIR / 'tesla_order_history.json'
-OPTION_CODES_FOLDER = PUBLIC_DIR / 'option-codes'
 TESLA_STORES_FILE = PUBLIC_DIR / 'tesla_locations.json'
 SETTINGS_FILE = PRIVATE_DIR / 'settings.json'
 
@@ -36,16 +35,6 @@ try:
         TESLA_STORES = json.load(f)
 except:
     TESLA_STORES = {}
-
-# Load option codes (last wins)
-OPTION_CODES: Dict[str, str] = {}
-for p in sorted(glob(f"{OPTION_CODES_FOLDER}/*.json")):
-    try:
-        with open(p, encoding="utf-8") as f:
-            OPTION_CODES.update(json.load(f))
-    except Exception:
-        continue
-
 
 class Config:
     def __init__(self, path: Path):

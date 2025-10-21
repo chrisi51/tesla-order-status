@@ -24,7 +24,7 @@ import sys
 import shutil
 import tempfile
 
-from app.config import APP_DIR, BASE_DIR, PUBLIC_DIR, OPTION_CODES_FOLDER, TESLA_STORES_FILE, cfg as Config
+from app.config import APP_DIR, BASE_DIR, PUBLIC_DIR, TESLA_STORES_FILE, cfg as Config
 from app.utils.colors import color_text
 from app.utils.helpers import exit_with_status
 from app.utils.locale import t
@@ -37,9 +37,6 @@ FILES_TO_CHECK: List[Path] = [
     BASE_DIR / "tesla_order_status.py",
     BASE_DIR / "hotfix.py",
     TESLA_STORES_FILE,
-    OPTION_CODES_FOLDER / "000_teslahunt.json",
-    OPTION_CODES_FOLDER / "050_directlease.json",
-    OPTION_CODES_FOLDER / "100_chrisi51.json",
     PUBLIC_DIR / "lang" / "de.json",
     PUBLIC_DIR / "lang" / "en.json",
     PUBLIC_DIR / "lang" / "pl.json",

@@ -9,7 +9,7 @@ from typing import Any, Optional
 from app.utils.colors import color_text
 from app.utils.locale import t
 from app.utils.params import STATUS_MODE
-from app.config import OPTION_CODES, cfg as Config
+from app.config import cfg as Config
 
 
 def exit_with_status(msg: str) -> None:
@@ -32,8 +32,10 @@ def decode_option_codes(option_string: str):
         if c.strip() and c.strip().upper() not in excluded_codes
     })
 
+    from app.utils.option_codes import get_option_codes
+    option_codes = get_option_codes()
     return [
-        (code, OPTION_CODES.get(code, t("Unknown option code")))
+        (code, option_codes.get(code, t("Unknown option code")))
         for code in codes
     ]
 def get_date_from_timestamp(timestamp):

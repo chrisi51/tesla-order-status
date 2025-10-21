@@ -1,11 +1,11 @@
 import webbrowser
 from typing import List, Dict
 
-from app.config import TELEMETRIC_URL, cfg as Config
+from app.config import TELEMETRIC_URL, VERSION, cfg as Config
 from app.utils.helpers import pseudonymize_data
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE, ALL_KEYS_MODE
 from app.utils.connection import request_with_retry
-from app.utils.locale import t, get_os_locale
+from app.utils.locale import t, LANGUAGE, get_os_locale
 
 def ensure_telemetry_consent() -> None:
     """Ask user for tracking consent if not already given."""
@@ -74,7 +74,9 @@ def track_usage(orders: List[dict]) -> None:
         "id": Config.get("fingerprint"),
         "orders": user_orders,
         "params": params,
-        "lang": get_os_locale()
+        "lang": get_os_locale(),
+        "ui_lang": LANGUAGE,
+        "version": VERSION
     }
 
     try:
