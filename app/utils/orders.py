@@ -122,7 +122,7 @@ def _render_share_output(detailed_orders):
                 cleaned_description = description.strip()
 
                 if category == 'paints' and cleaned_description:
-                    paint = cleaned_description
+                    paint = cleaned_description.replace('Metallic', '').replace('Multi-Coat','').strip()
                 elif category in {'interiors', 'interior', 'seats'} and cleaned_description:
                     interior = cleaned_description
                 elif category is None and cleaned_description:
