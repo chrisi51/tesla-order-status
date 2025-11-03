@@ -14,6 +14,7 @@ from app.utils.connection import request_with_retry
 FETCH_URL = "https://www.tesla-order-status-tracker.de/get/option_codes.php"
 CACHE_FILE = PRIVATE_DIR / "option_codes_cache.json"
 CACHE_TTL = timedelta(hours=24)
+SCHEMA_VERSION = 2
 _OPTION_CODES: Optional[Dict[str, Dict[str, Any]]] = None
 
 
@@ -89,6 +90,9 @@ def _load_cache(allow_expired: bool = False) -> Optional[Dict[str, Dict[str, Any
     if not isinstance(option_codes, dict):
         return None
 
+    schema_version = payload.get("schema_version")
+    requires_refresh = schema_version != SCHEMA_VERSION
+
     if not allow_expired:
         fetched_at = _parse_timestamp(payload.get("fetched_at"))
         if fetched_at is None:
@@ -102,6 +106,14 @@ def _load_cache(allow_expired: bool = False) -> Optional[Dict[str, Dict[str, Any
         entry = _normalize_entry(value)
         if entry:
             normalized[key] = entry
+            if not isinstance(value, dict):
+                requires_refresh = True
+        else:
+            requires_refresh = True
+
+    if requires_refresh and not allow_expired:
+        return None
+
     return normalized
 
 
@@ -110,6 +122,7 @@ def _write_cache(option_codes: Dict[str, Dict[str, Any]], fetched_at: Optional[s
     payload = {
         "fetched_at": fetched_at or datetime.now(timezone.utc).isoformat(),
         "option_codes": option_codes,
+        "schema_version": SCHEMA_VERSION,
     }
     CACHE_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
