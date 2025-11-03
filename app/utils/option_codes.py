@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from glob import glob
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from app.config import PRIVATE_DIR, PUBLIC_DIR
 from app.utils.connection import request_with_retry
@@ -14,7 +14,42 @@ from app.utils.connection import request_with_retry
 FETCH_URL = "https://www.tesla-order-status-tracker.de/get/option_codes.php"
 CACHE_FILE = PRIVATE_DIR / "option_codes_cache.json"
 CACHE_TTL = timedelta(hours=24)
-_OPTION_CODES: Optional[Dict[str, str]] = None
+_OPTION_CODES: Optional[Dict[str, Dict[str, Any]]] = None
+
+
+def _normalize_entry(value: Any) -> Optional[Dict[str, Any]]:
+    """Return a uniform option-code payload with at least label/category."""
+    if isinstance(value, dict):
+        label = value.get("label") or value.get("label_en") or value.get("label_en_us")
+        if label is None and "raw" in value:
+            raw = value.get("raw")
+            if isinstance(raw, dict):
+                label = raw.get("label") or raw.get("label_en")
+        category = value.get("category")
+        raw_payload = value.get("raw")
+        if raw_payload is None:
+            # Preserve original payload for future use if we have access to it
+            raw_payload = {
+                k: v for k, v in value.items()
+                if k not in {"label", "label_en", "label_en_us", "category", "raw"}
+            } or None
+        if label is None:
+            return None
+        entry = {
+            "label": str(label),
+            "category": str(category).strip().lower() if isinstance(category, str) else None,
+        }
+        if raw_payload:
+            entry["raw"] = raw_payload
+        return entry
+
+    if value is None:
+        return None
+
+    return {
+        "label": str(value),
+        "category": None,
+    }
 
 
 def _parse_timestamp(value: Optional[str]) -> Optional[datetime]:
@@ -41,7 +76,7 @@ def _parse_timestamp(value: Optional[str]) -> Optional[datetime]:
     return dt.astimezone(timezone.utc)
 
 
-def _load_cache(allow_expired: bool = False) -> Optional[Dict[str, str]]:
+def _load_cache(allow_expired: bool = False) -> Optional[Dict[str, Dict[str, Any]]]:
     if not CACHE_FILE.exists():
         return None
     try:
@@ -61,10 +96,16 @@ def _load_cache(allow_expired: bool = False) -> Optional[Dict[str, str]]:
         if datetime.now(timezone.utc) - fetched_at > CACHE_TTL:
             return None
 
-    return {str(code).strip().upper(): str(label) for code, label in option_codes.items()}
+    normalized: Dict[str, Dict[str, Any]] = {}
+    for code, value in option_codes.items():
+        key = str(code).strip().upper()
+        entry = _normalize_entry(value)
+        if entry:
+            normalized[key] = entry
+    return normalized
 
 
-def _write_cache(option_codes: Dict[str, str], fetched_at: Optional[str]) -> None:
+def _write_cache(option_codes: Dict[str, Dict[str, Any]], fetched_at: Optional[str]) -> None:
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "fetched_at": fetched_at or datetime.now(timezone.utc).isoformat(),
@@ -73,7 +114,7 @@ def _write_cache(option_codes: Dict[str, str], fetched_at: Optional[str]) -> Non
     CACHE_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _fetch_remote() -> Tuple[Optional[Dict[str, str]], Optional[str]]:
+def _fetch_remote() -> Tuple[Optional[Dict[str, Dict[str, Any]]], Optional[str]]:
     try:
         response = request_with_retry(FETCH_URL, exit_on_error=False)
     except RuntimeError:
@@ -88,7 +129,7 @@ def _fetch_remote() -> Tuple[Optional[Dict[str, str]], Optional[str]]:
     if not isinstance(payload, dict) or not payload.get("ok"):
         return None, None
 
-    option_codes: Dict[str, str] = {}
+    option_codes: Dict[str, Dict[str, Any]] = {}
     for entry in payload.get("option_codes", []):
         if not isinstance(entry, dict):
             continue
@@ -96,15 +137,21 @@ def _fetch_remote() -> Tuple[Optional[Dict[str, str]], Optional[str]]:
         label = entry.get("label_en")
         if not code or label is None:
             continue
-        option_codes[str(code).strip().upper()] = str(label)
+        category = entry.get("category")
+        normalized_entry = {
+            "label": str(label),
+            "category": str(category).strip().lower() if isinstance(category, str) else None,
+            "raw": entry,
+        }
+        option_codes[str(code).strip().upper()] = normalized_entry
 
     fetched_at = payload.get("fetched_at")
     return option_codes, fetched_at
 
 
-def _load_local_overrides() -> Dict[str, str]:
+def _load_local_overrides() -> Dict[str, Dict[str, Any]]:
     folder = PUBLIC_DIR / "option-codes"
-    option_codes: Dict[str, str] = {}
+    option_codes: Dict[str, Dict[str, Any]] = {}
     if not folder.exists() or not folder.is_dir():
         return option_codes
 
@@ -115,14 +162,15 @@ def _load_local_overrides() -> Dict[str, str]:
         except (OSError, ValueError):
             continue
         if isinstance(payload, dict):
-            option_codes.update({
-                str(code).strip().upper(): str(label)
-                for code, label in payload.items()
-            })
+            for code, value in payload.items():
+                key = str(code).strip().upper()
+                entry = _normalize_entry(value)
+                if entry:
+                    option_codes[key] = entry
     return option_codes
 
 
-def _apply_local_overrides(option_codes: Dict[str, str]) -> Dict[str, str]:
+def _apply_local_overrides(option_codes: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
     overrides = _load_local_overrides()
     if not overrides:
         return option_codes
@@ -131,8 +179,8 @@ def _apply_local_overrides(option_codes: Dict[str, str]) -> Dict[str, str]:
     return merged
 
 
-def get_option_codes(force_refresh: bool = False) -> Dict[str, str]:
-    """Return a dictionary mapping option codes to their English label."""
+def get_option_codes(force_refresh: bool = False) -> Dict[str, Dict[str, Any]]:
+    """Return a dictionary mapping option codes to their metadata."""
     global _OPTION_CODES
 
     if not force_refresh and _OPTION_CODES is not None:
@@ -167,4 +215,26 @@ def get_option_label(code: str) -> Optional[str]:
     """Return the label for *code* if it exists."""
     if not isinstance(code, str):
         return None
-    return get_option_codes().get(code.strip().upper())
+    entry = get_option_codes().get(code.strip().upper())
+    if not entry:
+        return None
+    return entry.get("label")
+
+
+def get_option_entry(code: str) -> Optional[Dict[str, Any]]:
+    """Return the normalized option-code entry if available."""
+    if not isinstance(code, str):
+        return None
+    entry = get_option_codes().get(code.strip().upper())
+    if entry is None:
+        return None
+    # Return a shallow copy to prevent accidental mutations of the cache
+    return dict(entry)
+
+
+def get_option_category(code: str) -> Optional[str]:
+    """Return the normalized category for *code*."""
+    entry = get_option_entry(code)
+    if not entry:
+        return None
+    return entry.get("category")

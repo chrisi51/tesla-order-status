@@ -19,6 +19,7 @@ import app.utils.history as history_module
 from app.utils.params import DETAILS_MODE, SHARE_MODE, STATUS_MODE, CACHED_MODE
 from app.utils.telemetry import track_usage
 from app.utils.timeline import print_timeline
+from app.utils.option_codes import get_option_entry
 
 
 def _get_all_orders(access_token):
@@ -116,21 +117,28 @@ def _render_share_output(detailed_orders):
         if decoded_options:
             print(f"---\n{color_text('Order Details:', '94')}")
             for code, description in decoded_options:
-                if 'Paint:' in description:
-                    value = description.replace('Paint:', '').replace('Metallic', '').replace('Multi-Coat','').strip()
-                    paint = value
-                if 'Interior:' in description:
-                    value = description.replace('Interior:', '').strip()
-                    interior = value
-                if 'Model' in description and len(description) > 10:
-                   # Extract model name and configuration suffix using regex
-                   # Model Y Long Range Dual Motor - AWD LR (Juniper) => Model Y - AWD LR
-                   match = re.match(r'(Model [YSX3]).*?((AWD|RWD) (LR|SR|P)).*?$', description)
-                   if match:
-                       model_name = match.group(1)
-                       config_suffix = match.group(2)
-                       value = f"{model_name} - {config_suffix}"
-                       model = value.strip()
+                entry = get_option_entry(code) or {}
+                category = entry.get('category')
+                cleaned_description = description.strip()
+
+                if category == 'paints' and cleaned_description:
+                    paint = cleaned_description
+                elif category in {'interiors', 'interior', 'seats'} and cleaned_description:
+                    interior = cleaned_description
+                elif category is None and cleaned_description:
+                    if paint == "unknown" and code.startswith(('PP', 'PN', 'PS', 'PA')):
+                        paint = cleaned_description
+                    if interior == "unknown" and code.startswith(('IP', 'IN', 'IW', 'IX', 'IY')):
+                        interior = cleaned_description
+
+                # Extract model information either from dedicated category or fallback heuristics
+                if category in {'models', 'model'} or ('Model' in cleaned_description and len(cleaned_description) > 10):
+                    match = re.match(r'(Model [YSX3]).*?((AWD|RWD) (LR|SR|P)).*?$', cleaned_description)
+                    if match:
+                        model_name = match.group(1)
+                        config_suffix = match.group(2)
+                        value = f"{model_name} - {config_suffix}"
+                        model = value.strip()
 
             if model and paint and interior:
                 msg = f"{model} / {paint} / {interior}"

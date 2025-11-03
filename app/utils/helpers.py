@@ -34,10 +34,21 @@ def decode_option_codes(option_string: str):
 
     from app.utils.option_codes import get_option_codes
     option_codes = get_option_codes()
-    return [
-        (code, option_codes.get(code, t("Unknown option code")))
-        for code in codes
-    ]
+    decoded = []
+    for code in codes:
+        entry = option_codes.get(code)
+        label = None
+        if isinstance(entry, dict):
+            label = entry.get("label")
+        elif isinstance(entry, str):
+            # Backwards compatibility for legacy caches
+            label = entry
+        decoded.append(
+            (code, label if label else t("Unknown option code"))
+        )
+    return decoded
+
+
 def get_date_from_timestamp(timestamp):
     """Truncates an ISO-8601 timestamp to its date component.
 

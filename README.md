@@ -205,7 +205,7 @@ On the very first launch you will be asked for consent. If you decline, nothing 
 You are always in control: telemetry is opt-in. Consent is requested on first run, and you can disable or revoke it at any time by editing the configuration file (`data/private/settings.json`) and setting `"telemetry-consent": false`.
 
 ## Issues
-If you have any issues, running the script or getting error messages, pleas feel free to ask for help in the [isses](https://github.com/chrisi51/tesla-order-status/issues) section or pm me at the [tff-forum](https://tff-forum.de/u/chrisi51/summary)
+If you have any issues, running the script or getting error messages, pleas feel free to ask for help in the [issues](https://github.com/chrisi51/tesla-order-status/issues) section or pm me at the [tff-forum](https://tff-forum.de/u/chrisi51/summary)
 
 
 ## Disclaimer
