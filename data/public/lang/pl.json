@@ -118,5 +118,7 @@
   "HELP PARAM SHARE": "Ukryj dane osobiste, takie jak ID zamówienia i VIN, do udostępniania.",
   "HELP PARAM DETAILS": "Pokaż dodatkowe szczegóły, takie jak informacje o finansowaniu.",
   "HELP PARAM ALL": "Pokaż WSZYSTKIE klucze w historii (może być dużo danych)",
-  "HELP PARAM CACHED": "Użyj lokalnie zapisanych danych bez kontaktu z API."
+  "HELP PARAM CACHED": "Użyj lokalnie zapisanych danych bez kontaktu z API.",
+  "HELP PARAM ORDER": "Wyświetl tylko zamówienie o podanym numerze referencyjnym (np. RN123456).",
+  "Error: No order with reference '{reference}' found.": "Błąd: Nie znaleziono zamówienia o numerze referencyjnym \"{reference}\"."
 }

@@ -12,6 +12,7 @@ group.add_argument("--share", action="store_true", help=t("HELP PARAM SHARE"))
 group.add_argument("--details", action="store_true", help=t("HELP PARAM DETAILS"))
 group.add_argument("--all", action="store_true", help=t("HELP PARAM ALL"))
 parser.add_argument("--cached", action="store_true", help=t("HELP PARAM CACHED"))
+parser.add_argument("--order", metavar="REFERENCE", help=t("HELP PARAM ORDER"))
 
 _args, _ = parser.parse_known_args()
 
@@ -25,3 +26,4 @@ SHARE_MODE = _args.share
 STATUS_MODE = _args.status
 CACHED_MODE = _args.cached
 ALL_KEYS_MODE = _args.all
+ORDER_FILTER = _args.order.strip().upper() if isinstance(_args.order, str) and _args.order.strip() else None

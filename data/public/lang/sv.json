@@ -118,5 +118,7 @@
   "HELP PARAM SHARE": "Dölj personuppgifter som order-ID och VIN vid delning.",
   "HELP PARAM DETAILS": "Visa ytterligare detaljer som finansieringsinformation.",
   "HELP PARAM ALL": "Visa ALLA nycklar i historiken (kan vara mycket data)",
-  "HELP PARAM CACHED": "Använd lokalt cachade data utan att kontakta API:t."
+  "HELP PARAM CACHED": "Använd lokalt cachade data utan att kontakta API:t.",
+  "HELP PARAM ORDER": "Visa endast beställningen med angivet referensnummer (t.ex. RN123456).",
+  "Error: No order with reference '{reference}' found.": "Fel: Hittade ingen beställning med referensen \"{reference}\"."
 }

@@ -32,9 +32,9 @@ def is_order_key_in_timeline(timeline, key, value = None):
     return False
 
 
-def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any]]:
+def get_timeline_from_history(order_reference: str, startdate) -> List[Dict[str, Any]]:
     # history liefert bereits Einträge mit timestamp/key/value (übersetzbar in history.py)
-    history = get_history_of_order(order_index)
+    history = get_history_of_order(order_reference)
     timeline = []
     new_car = False
     first_delivery_window = True
@@ -77,7 +77,7 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
         timeline.append(entry)
     return timeline
 
-def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> List[Dict[str, Any]]:
+def get_timeline_from_order(order_reference: str, detailed_order: Dict[str, Any]) -> List[Dict[str, Any]]:
     timeline: List[Dict[str, Any]] = []
 
     order_details = detailed_order.get("details", {})
@@ -105,7 +105,7 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
             }
         )
 
-    timeline_from_history = get_timeline_from_history(order_id, get_date_from_timestamp(order_info.get("reservationDate")))
+    timeline_from_history = get_timeline_from_history(order_reference, get_date_from_timestamp(order_info.get("reservationDate")))
 
     if scheduling.get('deliveryWindowDisplay'):
         if not is_order_key_in_timeline(timeline_from_history, 'Delivery Window'):
@@ -150,8 +150,8 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
     return timeline
 
 
-def print_timeline(order_id: int, detailed_order: Dict[str, Any]) -> None:
-    timeline = get_timeline_from_order(order_id, detailed_order)
+def print_timeline(order_reference: str, detailed_order: Dict[str, Any]) -> None:
+    timeline = get_timeline_from_order(order_reference, detailed_order)
     if not timeline:
         return
 

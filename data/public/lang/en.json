@@ -118,5 +118,7 @@
   "HELP PARAM SHARE": "Hide personal data like Order ID and VIN for sharing.",
   "HELP PARAM DETAILS": "Show additional details such as financing information.",
   "HELP PARAM ALL": "Show ALL keys in your history (potentially much data)",
-  "HELP PARAM CACHED": "Use locally cached data without contacting the API."
+  "HELP PARAM CACHED": "Use locally cached data without contacting the API.",
+  "HELP PARAM ORDER": "Display only the order with the given reference number (e.g. RN123456).",
+  "Error: No order with reference '{reference}' found.": "Error: No order with reference '{reference}' found."
 }

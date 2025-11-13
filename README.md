@@ -92,6 +92,9 @@ Work modes can be combined with any output mode:
 - `--cached` – reuse locally cached order data without calling the API (perfect with `--share`)
 - Automatic caching activates when you run the script again within one minute of a successful API request, keeping Tesla happy with fewer calls.
 
+#### Order Filters
+- `--order <referenceNumber>` – refresh every order in the background but only print the selected one (e.g. `--order RN123456`).
+
 ## Configuration
 ### General Settings
 The script stores the configuration in `data/private/settings.json`. Feel free to tweak it—if something breaks, the script falls back to default values.
