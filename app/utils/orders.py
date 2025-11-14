@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from collections import OrderedDict
+from datetime import datetime
 from typing import Any, Dict, Iterator, List, MutableMapping, Tuple, OrderedDict as TypingOrderedDict
 try:
     import pyperclip
@@ -14,7 +15,13 @@ except ImportError:
 from app.config import APP_VERSION, ORDERS_FILE, TESLA_STORES, TODAY
 from app.utils.colors import color_text, strip_color
 from app.utils.connection import request_with_retry
-from app.utils.helpers import decode_option_codes, get_date_from_timestamp, compare_dicts, exit_with_status
+from app.utils.helpers import (
+    decode_option_codes,
+    get_date_from_timestamp,
+    compare_dicts,
+    exit_with_status,
+    get_delivery_appointment_display,
+)
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
 from app.utils.locale import t, LANGUAGE, use_default_language
 import app.utils.history as history_module
@@ -248,7 +255,8 @@ def _render_share_output(detailed_orders):
     for idx, (_, order_reference, detailed_order) in enumerate(order_items, start=1):
         order = detailed_order['order']
         order_details = detailed_order['details']
-        scheduling = order_details.get('tasks', {}).get('scheduling', {})
+        tasks = order_details.get('tasks', {})
+        scheduling = tasks.get('scheduling', {})
         status_text = order.get('orderStatus', t('unknown'))
 
         print(color_text(f"{t('Order Details')} #{idx}:", '94'))
@@ -332,10 +340,11 @@ def display_orders(detailed_orders):
         print(f"{prefix}{separator}")
         order = detailed_order['order']
         order_details = detailed_order['details']
-        scheduling = order_details.get('tasks', {}).get('scheduling', {})
-        registration_data = order_details.get('tasks', {}).get('registration', {})
+        tasks = order_details.get('tasks', {})
+        scheduling = tasks.get('scheduling', {})
+        registration_data = tasks.get('registration', {})
         order_info = registration_data.get('orderDetails', {})
-        final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
+        final_payment_data = tasks.get('finalPayment', {}).get('data', {})
 
         print(f"{color_text(t('Order Details') + ':', '94')}")
         print(f"{color_text('- ' + t('Order ID') + ':', '94')} {order['referenceNumber']}")

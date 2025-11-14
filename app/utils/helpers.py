@@ -4,8 +4,9 @@ import hashlib
 import json
 import os
 import sys
-from datetime import datetime
-from typing import Any, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional
 from app.utils.colors import color_text
 from app.utils.locale import t
 from app.utils.params import STATUS_MODE
@@ -168,3 +169,96 @@ def pseudonymize_data(data: str, length: int) -> str:
     secret = _b32decode_nopad(secret_b32)
     digest = hmac.new(secret, data.encode("utf-8"), hashlib.sha256).digest()
     return _b32(digest, length)
+
+
+def format_timestamp_with_time(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    raw = value.strip()
+    if not raw or raw.upper() == "N/A":
+        return None
+    normalized = raw
+    if normalized.endswith(("Z", "z")):
+        normalized = normalized[:-1] + "+00:00"
+    if "T" not in normalized and len(normalized) >= 16 and normalized[10] == " ":
+        normalized = normalized[:10] + "T" + normalized[11:]
+    try:
+        dt = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt.strftime("%Y-%m-%d %H:%M")
+
+
+def get_delivery_appointment_display(tasks: Dict[str, Any]) -> Optional[str]:
+    candidates = []
+
+    delivery_details = tasks.get('deliveryDetails')
+    if isinstance(delivery_details, dict):
+        reg_data = delivery_details.get('regData')
+        if isinstance(reg_data, dict):
+            appointment = reg_data.get('deliveryAppointment')
+            if isinstance(appointment, dict):
+                candidates.append(appointment)
+        appointment = delivery_details.get('deliveryAppointment')
+        if isinstance(appointment, dict):
+            candidates.append(appointment)
+
+    final_payment = tasks.get('finalPayment')
+    if isinstance(final_payment, dict):
+        payment_data = final_payment.get('data')
+        if isinstance(payment_data, dict):
+            appointment = payment_data.get('deliveryAppointment')
+            if isinstance(appointment, dict):
+                candidates.append(appointment)
+            candidates.append(payment_data)
+
+    scheduling = tasks.get('scheduling')
+    if isinstance(scheduling, dict):
+        appointment = scheduling.get('deliveryAppointment')
+        if isinstance(appointment, dict):
+            candidates.append(appointment)
+
+    for source in candidates:
+        for key in ('appointmentDate', 'appointmentDateUtc'):
+            value = source.get(key)
+            formatted = format_timestamp_with_time(value)
+            if formatted:
+                return formatted
+
+    if isinstance(scheduling, dict):
+        raw = scheduling.get('deliveryAppointmentDate')
+        if isinstance(raw, str):
+            formatted = format_timestamp_with_time(raw)
+            if formatted:
+                return formatted
+            condensed = " ".join(raw.split())
+            return condensed or None
+
+        appt_text = scheduling.get('apptDateTimeAddressStr')
+        if isinstance(appt_text, str):
+            first_line = appt_text.splitlines()[0].strip()
+            formatted = format_timestamp_with_time(first_line)
+            if formatted:
+                return formatted
+            return first_line or None
+
+    return None
+
+
+def _parse_datetime_with_reference(value: str, reference_timestamp: Optional[str]) -> Optional[datetime]:
+    normalized = value
+    if normalized.endswith(("Z", "z")):
+        normalized = normalized[:-1] + "+00:00"
+    if "T" not in normalized and len(normalized) >= 16 and normalized[10] == " ":
+        normalized = normalized[:10] + "T" + normalized[11:]
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError:
+        pass
+
+    if reference_timestamp:
+        return _parse_datetime_with_reference(reference_timestamp, None)
+
+    return None
