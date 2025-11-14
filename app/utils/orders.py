@@ -241,24 +241,23 @@ def get_model_from_order(detailed_order) -> str:
     return model
 
 def _render_share_output(detailed_orders):
-    for _, order_reference, detailed_order in enumerate_orders(detailed_orders):
+    order_items = list(enumerate_orders(detailed_orders))
+    total_orders = len(order_items)
+    share_separator = "=" * 60
+
+    for idx, (_, order_reference, detailed_order) in enumerate(order_items, start=1):
         order = detailed_order['order']
         order_details = detailed_order['details']
         scheduling = order_details.get('tasks', {}).get('scheduling', {})
-        model_summary = get_model_from_order(detailed_order)
         status_text = order.get('orderStatus', t('unknown'))
 
-        print("---")
-        print(f"{color_text(t('Order ID') + ':', '94')} {order_reference}")
-        print(f"{color_text(t('Status') + ':', '94')} {status_text}")
-        if model_summary and model_summary != "unknown":
-            print(f"{color_text(t('Model') + ':', '94')} {model_summary}")
+        print(color_text(f"{t('Order Details')} #{idx}:", '94'))
+
 
         model = paint = interior = "unknown"
 
         decoded_options = decode_option_codes(order.get('mktOptions', ''))
         if decoded_options:
-            print(f"{color_text(t('Configuration') + ':', '94')}")
             for code, description in decoded_options:
                 entry = get_option_entry(code) or {}
                 category = entry.get('category')
@@ -282,14 +281,19 @@ def _render_share_output(detailed_orders):
                         value = f"{model_name} - {config_suffix}"
                         model = value.strip()
 
-            if model and paint and interior:
-                msg = f"{model} / {paint} / {interior}"
-                print(f"- {msg}")
+        if model and paint and interior:
+            msg = f"{model} / {paint} / {interior}"
+            print(f"- {msg}")
 
         if scheduling.get('deliveryAddressTitle'):
             print(f"- {scheduling.get('deliveryAddressTitle')}")
 
         print_timeline(order_reference, detailed_order)
+
+        if idx < total_orders:
+            print(f"\n{share_separator}\n")
+        else:
+            print()
 
 def generate_share_output(detailed_orders):
     original_share_mode = history_module.SHARE_MODE
@@ -309,7 +313,7 @@ def generate_share_output(detailed_orders):
         # Create advertising text but don't print it
         ad_text = (f"\n{strip_color('Do you want to share your data and compete with others?')}\n"
                    f"{strip_color('Check it out on GitHub: https://github.com/chrisi51/tesla-order-status')}")
-        pyperclip.copy("```\n" + strip_color(output_capture.getvalue()) + ad_text + "\n```")
+        pyperclip.copy("```yaml\n" + strip_color(output_capture.getvalue()) + ad_text + "\n```")
 
     return output_capture.getvalue()
 
@@ -322,15 +326,16 @@ def display_orders(detailed_orders):
     if HAS_PYPERCLIP:
         generate_share_output(detailed_orders)
 
+    separator = "=" * 45
     for order_number, order_reference, detailed_order in enumerate_orders(detailed_orders):
+        prefix = "\n" if order_number == 0 else "\n\n"
+        print(f"{prefix}{separator}")
         order = detailed_order['order']
         order_details = detailed_order['details']
         scheduling = order_details.get('tasks', {}).get('scheduling', {})
         registration_data = order_details.get('tasks', {}).get('registration', {})
         order_info = registration_data.get('orderDetails', {})
         final_payment_data = order_details.get('tasks', {}).get('finalPayment', {}).get('data', {})
-
-        print(f"{'-'*45}")
 
         print(f"{color_text(t('Order Details') + ':', '94')}")
         print(f"{color_text('- ' + t('Order ID') + ':', '94')} {order['referenceNumber']}")
