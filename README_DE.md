@@ -31,6 +31,7 @@ Behalte deine Tesla-Bestellung von der Auftragsbestätigung bis zur Auslieferung
 * 🧾 **Wichtige Details im Blick**: Fahrzeugoptionen, Produktions‑ und Lieferfortschritt.
 * 🕒 **Historie auf einen Blick**: Jede Änderung (z. B. VIN‑Zuteilung) wird lokal protokolliert.
 * 📋 **One‑Click‑Share‑Modus**: Anonymisierte Zwischenablage für Foren & Social Media.
+* 🔁 **Mehrfach-Bestellungen**: Unterstützt mehrere Tesla-Aufträge parallel, `--order <Referenz>` filtert eine einzelne Bestellung.
 * 🧩 **Modular & erweiterbar**: Option‑Codes, Sprachen und Features flexibel ausbaubar.
 * 🔐 **Privacy‑First**: Tokens und Einstellungen bleiben lokal – Telemetry ist komplett optional.
 
