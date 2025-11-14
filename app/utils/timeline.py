@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.utils.colors import color_text
@@ -7,6 +7,7 @@ from app.utils.helpers import (
     get_date_from_timestamp,
     normalize_str,
     get_delivery_appointment_display,
+    _parse_iso_timestamp,
 )
 from app.utils.history import get_history_of_order
 from app.utils.locale import t
@@ -26,28 +27,8 @@ TIMELINE_WHITELIST = {
 TIMELINE_WHITELIST_NORMALIZED = {normalize_str(key) for key in TIMELINE_WHITELIST}
 
 
-def _parse_timestamp(value: Any) -> Optional[datetime]:
-    if not isinstance(value, str):
-        return None
-    raw = value.strip()
-    if not raw:
-        return None
-    normalized = raw
-    if raw.endswith(("Z", "z")):
-        normalized = raw[:-1] + "+00:00"
-    if "T" not in normalized and len(normalized) >= 16 and normalized[10] == " ":
-        normalized = normalized[:10] + "T" + normalized[11:]
-    try:
-        dt = datetime.fromisoformat(normalized)
-    except ValueError:
-        return None
-    if dt.tzinfo is not None:
-        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-    return dt
-
-
 def _split_timestamp(value: Any) -> Tuple[str, Optional[str]]:
-    parsed = _parse_timestamp(value)
+    parsed = _parse_iso_timestamp(value) if isinstance(value, str) else None
     if parsed:
         date_display = parsed.date().isoformat()
         has_time_info = isinstance(value, str) and (":" in value or "T" in value)
@@ -60,7 +41,7 @@ def _split_timestamp(value: Any) -> Tuple[str, Optional[str]]:
 
 def _sort_timeline_entries(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     enumerated = list(enumerate(entries))
-    enumerated.sort(key=lambda item: (_parse_timestamp(item[1].get("timestamp")) or datetime.max, item[0]))
+    enumerated.sort(key=lambda item: (_parse_iso_timestamp(item[1].get("timestamp")) or datetime.max, item[0]))
     return [entry for _, entry in enumerated]
 
 def is_order_key_in_timeline(timeline, key, value = None):
