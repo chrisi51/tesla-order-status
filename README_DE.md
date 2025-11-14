@@ -31,6 +31,7 @@ Behalte deine Tesla-Bestellung von der Auftragsbestätigung bis zur Auslieferung
 * 🧾 **Wichtige Details im Blick**: Fahrzeugoptionen, Produktions‑ und Lieferfortschritt.
 * 🕒 **Historie auf einen Blick**: Jede Änderung (z. B. VIN‑Zuteilung) wird lokal protokolliert.
 * 📋 **One‑Click‑Share‑Modus**: Anonymisierte Zwischenablage für Foren & Social Media.
+* 🔁 **Mehrfach-Bestellungen**: Unterstützt mehrere Tesla-Aufträge parallel, `--order <Referenz>` filtert eine einzelne Bestellung.
 * 🧩 **Modular & erweiterbar**: Option‑Codes, Sprachen und Features flexibel ausbaubar.
 * 🔐 **Privacy‑First**: Tokens und Einstellungen bleiben lokal – Telemetry ist komplett optional.
 
@@ -113,6 +114,10 @@ python3 tesla_order_status.py --help
 
 * `--cached` – nutzt lokal gecachte Bestelldaten ohne neue API‑Anfragen (ideal zusammen mit `--share`)
 * Automatisches Caching: Startest du das Skript innerhalb einer Minute nach einem erfolgreichen API‑Request erneut, wird automatisch der Cache genutzt (schont die Tesla‑API).
+
+#### Filter
+
+* `--order <Referenznummer>` – aktualisiert weiterhin alle Bestellungen, zeigt aber nur die angegebene Referenz (z. B. `--order RN123456`) an.
 
 ## Konfiguration
 

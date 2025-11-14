@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any, Dict, List
 
 from app.config import HISTORY_FILE, TODAY
 from app.utils.colors import color_text
@@ -104,77 +105,84 @@ HISTORY_TRANSLATIONS_DETAILS = {
     'details.tasks.scheduling.apptDateTimeAddressStr': 'Delivery Details'
 }
 
-def load_history_from_file():
+HistoryEntry = Dict[str, Any]
+HistoryStore = Dict[str, List[HistoryEntry]]
+
+def load_history_from_file() -> HistoryStore:
     if os.path.exists(HISTORY_FILE):
-       try:
-           with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
-               history = json.load(f)
-           return history
-       except (OSError, json.JSONDecodeError):
-           return []
-    return []
+        try:
+            with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+                history = json.load(f)
+            if isinstance(history, dict):
+                normalized: HistoryStore = {}
+                for reference, entries in history.items():
+                    if not isinstance(entries, list):
+                        continue
+                    normalized[str(reference)] = [
+                        entry for entry in entries
+                        if isinstance(entry, dict)
+                    ]
+                return normalized
+        except (OSError, json.JSONDecodeError):
+            pass
+    return {}
 
 
-def save_history_to_file(history):
+def save_history_to_file(history: HistoryStore) -> None:
     HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(history, f)
 
 
-def get_history_of_order(order_id):
-    order_id_str = str(order_id)
+def get_history_of_order(order_reference) -> List[Dict[str, Any]]:
     history = load_history_from_file()
-    changes = []
-    if history:
-        for entry in history:
-            for change in entry['changes']:
-                key = change.get('key')
-                if not isinstance(key, str):
+    entries = history.get(str(order_reference), [])
+    changes: List[Dict[str, Any]] = []
+    for entry in entries:
+        timestamp = entry.get('timestamp')
+        entry_changes = entry.get('changes', [])
+        if not isinstance(entry_changes, list):
+            continue
+        for change in entry_changes:
+            if not isinstance(change, dict):
+                continue
+
+            key = change.get('key')
+            key_str = key if isinstance(key, str) else ""
+            display_key = key_str
+
+            if not ALL_KEYS_MODE:
+                if any(key_str.startswith(pref) for pref in HISTORY_TRANSLATIONS_IGNORED):
                     continue
 
-                # Skip if not matching order_id
-                key_parts = key.split('.', 1)
-                if len(key_parts) == 0 or key_parts[0] != order_id_str:
+                if not DETAILS_MODE:
+                    if key_str not in HISTORY_TRANSLATIONS and key_str not in HISTORY_TRANSLATIONS_ANONYMOUS:
+                        continue
+
+                if key_str in HISTORY_TRANSLATIONS_DETAILS:
+                    display_key = HISTORY_TRANSLATIONS_DETAILS[key_str]
+                else:
                     continue
 
-                # Extract just the path after removing order number prefix
-                if len(key_parts) > 1:
-                    key = key_parts[1]
+                if SHARE_MODE and key_str in HISTORY_TRANSLATIONS_ANONYMOUS:
+                    change = dict(change)
+                    for field in ['value', 'old_value']:
+                        if isinstance(change.get(field), str):
+                            change[field] = None
 
-                # skip if key is uninteresting
-                if not ALL_KEYS_MODE:
-                    if any(key.startswith(pref) for pref in HISTORY_TRANSLATIONS_IGNORED):
-                        continue
+            sanitized_change = {
+                'operation': change.get('operation'),
+                'key': display_key,
+                'value': change.get('value'),
+                'old_value': change.get('old_value'),
+                'timestamp': timestamp
+            }
 
+            for field in ['value', 'old_value']:
+                if isinstance(sanitized_change.get(field), str):
+                    sanitized_change[field] = get_date_from_timestamp(sanitized_change[field])
 
-                    if not DETAILS_MODE:
-                        if key not in HISTORY_TRANSLATIONS and key not in HISTORY_TRANSLATIONS_ANONYMOUS:
-                            continue
-
-                    # translate if key is known
-                    if key in HISTORY_TRANSLATIONS_DETAILS:
-                        # skip if not in details mode and old entrys (only show in non details mode if its from today)
-                        change['key'] = HISTORY_TRANSLATIONS_DETAILS[key]
-                    else:
-                        continue
-
-
-                    if SHARE_MODE:
-                        # remove values from keys, which have to be anonymous
-                        if key in HISTORY_TRANSLATIONS_ANONYMOUS:
-                            for field in ['value', 'old_value']:
-                                if isinstance(change.get(field), str):
-                                    change[field] = None
-
-
-                # Check and convert timestamps in value and old_value
-                for field in ['value', 'old_value']:
-                    if isinstance(change.get(field), str):
-                        change[field] = get_date_from_timestamp(change[field])
-
-                change['timestamp'] = entry['timestamp']
-
-                changes.append(change)
+            changes.append(sanitized_change)
     return changes
 
 def _format_value(value):
@@ -184,8 +192,8 @@ def _format_value(value):
         return t("Too much data - only available in --details view")
     return value
 
-def print_history(order_id: int) -> None:
-    history = get_history_of_order(order_id)
+def print_history(order_reference) -> None:
+    history = get_history_of_order(order_reference)
     if history:
         print("\n")
         print(color_text(t("Change History") + ':', '94'))

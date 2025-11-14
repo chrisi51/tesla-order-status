@@ -4,10 +4,11 @@ import hashlib
 import json
 import os
 import sys
-from datetime import datetime
-from typing import Any, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Optional
 from app.utils.colors import color_text
-from app.utils.locale import t
+from app.utils.locale import t, LANGUAGE
 from app.utils.params import STATUS_MODE
 from app.config import cfg as Config
 
@@ -168,3 +169,115 @@ def pseudonymize_data(data: str, length: int) -> str:
     secret = _b32decode_nopad(secret_b32)
     digest = hmac.new(secret, data.encode("utf-8"), hashlib.sha256).digest()
     return _b32(digest, length)
+
+
+def _parse_iso_timestamp(value: str) -> Optional[datetime]:
+    normalized = value.strip()
+    if not normalized:
+        return None
+    if normalized.endswith(("Z", "z")):
+        normalized = normalized[:-1] + "+00:00"
+    if "T" not in normalized and len(normalized) >= 16 and normalized[10] == " ":
+        normalized = normalized[:10] + "T" + normalized[11:]
+    try:
+        dt = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+def format_timestamp_with_time(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    dt = _parse_iso_timestamp(value)
+    if not dt:
+        return None
+    return dt.strftime("%Y-%m-%d %H:%M")
+
+
+def get_delivery_appointment_display(tasks: Dict[str, Any]) -> Optional[str]:
+    for source in _iter_delivery_appointment_sources(tasks):
+        for key in ("appointmentDate", "appointmentDateUtc"):
+            formatted = format_timestamp_with_time(source.get(key))
+            if formatted:
+                return formatted
+
+    scheduling = tasks.get('scheduling')
+    if isinstance(scheduling, dict):
+        raw = scheduling.get('deliveryAppointmentDate')
+        if isinstance(raw, str):
+            formatted = format_timestamp_with_time(raw)
+            if formatted:
+                return formatted
+            condensed = " ".join(raw.split())
+            return condensed or None
+
+        appt_text = scheduling.get('apptDateTimeAddressStr')
+        if isinstance(appt_text, str):
+            first_line = appt_text.splitlines()[0].strip()
+            formatted = format_timestamp_with_time(first_line)
+            if formatted:
+                return formatted
+            return first_line or None
+
+    return None
+
+
+DATE_FORMATS = {
+    "de": "%d.%m.%Y",
+    "en": "%Y-%m-%d",
+    "fi": "%d.%m.%Y",
+    "sv": "%Y-%m-%d",
+    "pl": "%d.%m.%Y",
+}
+
+DATETIME_FORMATS = {
+    "de": "%d.%m.%Y %H:%M",
+    "en": "%Y-%m-%d %H:%M",
+    "fi": "%d.%m.%Y %H:%M",
+    "sv": "%Y-%m-%d %H:%M",
+    "pl": "%d.%m.%Y %H:%M",
+}
+
+
+def locale_format_datetime(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    dt = _parse_iso_timestamp(value)
+    if not dt:
+        return None
+    lang = (LANGUAGE or "en").split("_")[0]
+    if dt.hour == 0 and dt.minute == 0:
+        fmt = DATE_FORMATS.get(lang, "%Y-%m-%d")
+    else:
+        fmt = DATETIME_FORMATS.get(lang, "%Y-%m-%d %H:%M")
+    return dt.strftime(fmt)
+
+
+def _iter_delivery_appointment_sources(tasks: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
+    delivery_details = tasks.get('deliveryDetails')
+    if isinstance(delivery_details, dict):
+        reg_data = delivery_details.get('regData')
+        if isinstance(reg_data, dict):
+            appointment = reg_data.get('deliveryAppointment')
+            if isinstance(appointment, dict):
+                yield appointment
+        appointment = delivery_details.get('deliveryAppointment')
+        if isinstance(appointment, dict):
+            yield appointment
+
+    final_payment = tasks.get('finalPayment')
+    if isinstance(final_payment, dict):
+        payment_data = final_payment.get('data')
+        if isinstance(payment_data, dict):
+            appointment = payment_data.get('deliveryAppointment')
+            if isinstance(appointment, dict):
+                yield appointment
+
+    scheduling = tasks.get('scheduling')
+    if isinstance(scheduling, dict):
+        appointment = scheduling.get('deliveryAppointment')
+        if isinstance(appointment, dict):
+            yield appointment

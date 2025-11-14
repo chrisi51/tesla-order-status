@@ -117,7 +117,9 @@
   "HELP PARAM SHARE": "Verbirgt persönliche Daten wie Bestellnummer und Fahrgestellnummer zum Teilen.",
   "HELP PARAM DETAILS": "Zeigt zusätzliche Details wie Finanzierungsinformationen an.",
   "HELP PARAM ALL": "ALLE Schlüssel im Verlauf anzeigen (möglicherweise sehr viele Daten!)",
-  "HELP PARAM CACHED": "Verwendet lokal zwischengespeicherte Daten, ohne die API zu kontaktieren."
+  "HELP PARAM CACHED": "Verwendet lokal zwischengespeicherte Daten, ohne die API zu kontaktieren.",
+  "HELP PARAM ORDER": "Zeigt nur die Bestellung mit der angegebenen Referenznummer (z. B. RN123456).",
+  "Error: No order with reference '{reference}' found.": "Fehler: Keine Bestellung mit der Referenz \"{reference}\" gefunden."
 
 
 

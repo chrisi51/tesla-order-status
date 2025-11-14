@@ -1,8 +1,14 @@
 from __future__ import annotations
-from typing import Any, Dict, List
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 from app.utils.colors import color_text
-from app.utils.helpers import get_date_from_timestamp, normalize_str
+from app.utils.helpers import (
+    get_date_from_timestamp,
+    normalize_str,
+    get_delivery_appointment_display,
+    _parse_iso_timestamp,
+)
 from app.utils.history import get_history_of_order
 from app.utils.locale import t
 
@@ -20,6 +26,24 @@ TIMELINE_WHITELIST = {
 }
 TIMELINE_WHITELIST_NORMALIZED = {normalize_str(key) for key in TIMELINE_WHITELIST}
 
+
+def _split_timestamp(value: Any) -> Tuple[str, Optional[str]]:
+    parsed = _parse_iso_timestamp(value) if isinstance(value, str) else None
+    if parsed:
+        date_display = parsed.date().isoformat()
+        has_time_info = isinstance(value, str) and (":" in value or "T" in value)
+        time_display = parsed.strftime("%H:%M") if has_time_info else None
+        return date_display, time_display if time_display and time_display != "00:00" else None
+    if isinstance(value, str) and value.strip():
+        return value.strip(), None
+    return t("unknown"), None
+
+
+def _sort_timeline_entries(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    enumerated = list(enumerate(entries))
+    enumerated.sort(key=lambda item: (_parse_iso_timestamp(item[1].get("timestamp")) or datetime.max, item[0]))
+    return [entry for _, entry in enumerated]
+
 def is_order_key_in_timeline(timeline, key, value = None):
     """Return ``True`` if *timeline* contains an entry with *key* and *value*."""
 
@@ -32,9 +56,9 @@ def is_order_key_in_timeline(timeline, key, value = None):
     return False
 
 
-def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any]]:
+def get_timeline_from_history(order_reference: str, startdate) -> List[Dict[str, Any]]:
     # history liefert bereits Einträge mit timestamp/key/value (übersetzbar in history.py)
-    history = get_history_of_order(order_index)
+    history = get_history_of_order(order_reference)
     timeline = []
     new_car = False
     first_delivery_window = True
@@ -75,9 +99,9 @@ def get_timeline_from_history(order_index: int, startdate) -> List[Dict[str, Any
             continue
 
         timeline.append(entry)
-    return timeline
+    return _sort_timeline_entries(timeline)
 
-def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> List[Dict[str, Any]]:
+def get_timeline_from_order(order_reference: str, detailed_order: Dict[str, Any]) -> List[Dict[str, Any]]:
     timeline: List[Dict[str, Any]] = []
 
     order_details = detailed_order.get("details", {})
@@ -105,7 +129,7 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
             }
         )
 
-    timeline_from_history = get_timeline_from_history(order_id, get_date_from_timestamp(order_info.get("reservationDate")))
+    timeline_from_history = get_timeline_from_history(order_reference, get_date_from_timestamp(order_info.get("reservationDate")))
 
     if scheduling.get('deliveryWindowDisplay'):
         if not is_order_key_in_timeline(timeline_from_history, 'Delivery Window'):
@@ -138,20 +162,21 @@ def get_timeline_from_order(order_id: int, detailed_order: Dict[str, Any]) -> Li
                 }
             )
         
-    if scheduling.get('deliveryAppointmentDate'):
+    appointment_display = get_delivery_appointment_display(tasks)
+    if appointment_display:
         if not is_order_key_in_timeline(timeline_from_history, 'Delivery Appointment Date'):
             timeline.append({
-                "timestamp": get_date_from_timestamp(scheduling.get("deliveryAppointmentDate")),
+                "timestamp": appointment_display,
                 "key": "Delivery Appointment Date",
                 "value": "",
             })
 
     timeline.extend(timeline_from_history)
-    return timeline
+    return _sort_timeline_entries(timeline)
 
 
-def print_timeline(order_id: int, detailed_order: Dict[str, Any]) -> None:
-    timeline = get_timeline_from_order(order_id, detailed_order)
+def print_timeline(order_reference: str, detailed_order: Dict[str, Any]) -> None:
+    timeline = get_timeline_from_order(order_reference, detailed_order)
     if not timeline:
         return
 
@@ -167,5 +192,9 @@ def print_timeline(order_id: int, detailed_order: Dict[str, Any]) -> None:
         if entry.get("value"):
             msg_parts.append(f": {entry['value']}")
         msg = "".join(msg_parts)
-        print(f"- {entry.get('timestamp')}: {msg}")
+        date_display, time_display = _split_timestamp(entry.get("timestamp"))
+        line = f"- {date_display}: {msg}"
+        if time_display:
+            line += f" ({time_display})"
+        print(line)
         printed_keys.add(normalized_key)

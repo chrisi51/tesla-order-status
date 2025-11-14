@@ -27,6 +27,7 @@ Stay in control of your Tesla order from the moment you place it until delivery.
 - 🧾 **Display of important details**: Vehicle options, production and delivery progress.
 - 🕒 **History at a glance**: Every change (e.g. VIN allocation) is documented locally.
 - 📋 **One‑click share mode**: Anonymized clipboard for forums and social media
+- 🔁 **Multi-order ready**: Handles multiple Tesla orders at once, with `--order <reference>` to focus on a single one.
 - 🧩 **Modular & expandable**: Option codes, languages and features can be flexibly expanded.
 - 🔐 **Privacy-focused**: Tokens and settings remain on your device – telemetry is completely optional.
 
@@ -91,6 +92,9 @@ Only one of the options can be used at a time.
 Work modes can be combined with any output mode:
 - `--cached` – reuse locally cached order data without calling the API (perfect with `--share`)
 - Automatic caching activates when you run the script again within one minute of a successful API request, keeping Tesla happy with fewer calls.
+
+#### Order Filters
+- `--order <referenceNumber>` – refresh every order in the background but only print the selected one (e.g. `--order RN123456`).
 
 ## Configuration
 ### General Settings
