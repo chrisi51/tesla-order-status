@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, Optional
 from typing import Any, Dict, Optional
 from app.utils.colors import color_text
-from app.utils.locale import t
+from app.utils.locale import t, LANGUAGE
 from app.utils.params import STATUS_MODE
 from app.config import cfg as Config
 
@@ -225,6 +225,37 @@ def get_delivery_appointment_display(tasks: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+DATE_FORMATS = {
+    "de": "%d.%m.%Y",
+    "en": "%Y-%m-%d",
+    "fi": "%d.%m.%Y",
+    "sv": "%Y-%m-%d",
+    "pl": "%d.%m.%Y",
+}
+
+DATETIME_FORMATS = {
+    "de": "%d.%m.%Y %H:%M",
+    "en": "%Y-%m-%d %H:%M",
+    "fi": "%d.%m.%Y %H:%M",
+    "sv": "%Y-%m-%d %H:%M",
+    "pl": "%d.%m.%Y %H:%M",
+}
+
+
+def locale_format_datetime(value: Any) -> Optional[str]:
+    if not isinstance(value, str):
+        return None
+    dt = _parse_iso_timestamp(value)
+    if not dt:
+        return None
+    lang = (LANGUAGE or "en").split("_")[0]
+    if dt.hour == 0 and dt.minute == 0:
+        fmt = DATE_FORMATS.get(lang, "%Y-%m-%d")
+    else:
+        fmt = DATETIME_FORMATS.get(lang, "%Y-%m-%d %H:%M")
+    return dt.strftime(fmt)
+
+
 def _iter_delivery_appointment_sources(tasks: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
     delivery_details = tasks.get('deliveryDetails')
     if isinstance(delivery_details, dict):
@@ -250,20 +281,3 @@ def _iter_delivery_appointment_sources(tasks: Dict[str, Any]) -> Iterable[Dict[s
         appointment = scheduling.get('deliveryAppointment')
         if isinstance(appointment, dict):
             yield appointment
-
-
-def _parse_datetime_with_reference(value: str, reference_timestamp: Optional[str]) -> Optional[datetime]:
-    normalized = value
-    if normalized.endswith(("Z", "z")):
-        normalized = normalized[:-1] + "+00:00"
-    if "T" not in normalized and len(normalized) >= 16 and normalized[10] == " ":
-        normalized = normalized[:10] + "T" + normalized[11:]
-    try:
-        return datetime.fromisoformat(normalized)
-    except ValueError:
-        pass
-
-    if reference_timestamp:
-        return _parse_datetime_with_reference(reference_timestamp, None)
-
-    return None

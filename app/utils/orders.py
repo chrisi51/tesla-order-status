@@ -21,6 +21,7 @@ from app.utils.helpers import (
     compare_dicts,
     exit_with_status,
     get_delivery_appointment_display,
+    locale_format_datetime
 )
 from app.utils.history import load_history_from_file, save_history_to_file, print_history
 from app.utils.locale import t, LANGUAGE, use_default_language
@@ -382,11 +383,19 @@ def display_orders(detailed_orders):
         else:
             print(f"{color_text('- ' + t('Delivery Center') + ':', '94')} {scheduling.get('deliveryAddressTitle', 'N/A')}")
 
-        if final_payment_data.get('etaToDeliveryCenter'):
-            print(f"{color_text('- ' + t('ETA to Delivery Center') + ':', '94')} {final_payment_data.get('etaToDeliveryCenter', 'N/A')}")
-        if scheduling.get('deliveryAppointmentDate'):
-            delivery_window = get_date_from_timestamp(scheduling.get('deliveryAppointmentDate'))
-            print(f"{color_text('- ' + t('Delivery Appointment Date') + ':', '94')} {delivery_window}")
+        eta_value = final_payment_data.get('etaToDeliveryCenter')
+        if eta_value:
+            formatted_eta = locale_format_datetime(eta_value) or eta_value
+            print(f"{color_text('- ' + t('ETA to Delivery Center') + ':', '94')} {formatted_eta}")
+        appointment_iso = get_delivery_appointment_display(tasks)
+        appointment_localized = locale_format_datetime(appointment_iso) if appointment_iso else None
+        appointment_raw = scheduling.get('deliveryAppointmentDate')
+        if appointment_localized:
+            print(f"{color_text('- ' + t('Delivery Appointment Date') + ':', '94')} {appointment_localized}")
+        elif isinstance(appointment_raw, str) and appointment_raw.strip():
+            condensed = " ".join(appointment_raw.split())
+            fallback = locale_format_datetime(condensed) or condensed
+            print(f"{color_text('- ' + t('Delivery Appointment Date') + ':', '94')} {fallback}")
         else:
             print(f"{color_text('- ' + t('Delivery Window') + ':', '94')} {scheduling.get('deliveryWindowDisplay', t('unknown'))}")
 
