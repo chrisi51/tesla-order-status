@@ -260,7 +260,11 @@ def _render_share_output(detailed_orders):
         scheduling = tasks.get('scheduling', {})
         status_text = order.get('orderStatus', t('unknown'))
 
-        print(color_text(f"{t('Order Details')} #{idx}:", '94'))
+        if total_orders > 1:
+            header = f"#{idx} {t('Order Details')}:"
+        else:
+            header = f"{t('Order Details')}:"
+        print(color_text(header, '94'))
 
 
         model = paint = interior = "unknown"
