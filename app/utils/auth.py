@@ -54,7 +54,13 @@ def _get_auth_code(code_challenge: str):
     if input(color_text(t("Proceed to open the login page? (y/n): "), '93')).lower() != 'y':
         print(color_text(t("Authentication cancelled."), '91'))
         sys.exit(0)
-    webbrowser.open(auth_url)
+    try:
+        if not webbrowser.open(auth_url):
+            print(color_text(t("No GUI detected. Open this URL manually:"), 91))
+            print(f"{auth_url}")
+    except Exception:
+        print(color_text(t("No GUI detected. Open this URL manually:"), 91))
+        print(f"{auth_url}")
     redirected_url = input(color_text(t("Please enter the redirected URL here: "), '93'))
     parsed_url = urllib.parse.urlparse(redirected_url)
     params = urllib.parse.parse_qs(parsed_url.query)
