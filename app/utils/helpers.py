@@ -172,6 +172,8 @@ def pseudonymize_data(data: str, length: int) -> str:
 
 
 def _parse_iso_timestamp(value: str) -> Optional[datetime]:
+    if value is None:
+        return None
     normalized = value.strip()
     if not normalized:
         return None
