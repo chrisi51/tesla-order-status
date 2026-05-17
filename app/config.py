@@ -7,9 +7,9 @@ from typing import Any, Dict
 # -------------------------
 # Constants
 # -------------------------
-TESLA_APP_VERSION = "4.53.1-4047"
-TESLA_USER_AGENT = "Tesla/4.53.1 (com.teslamotors.tesla; build:4047; Android 14)"
-TESLA_X_USER_AGENT = "TeslaApp/4.53.1-4047/4047/android/14"
+TESLA_APP_VERSION = "4.55.5-4193"
+TESLA_USER_AGENT = "Tesla/4.55.5 (com.teslamotors.tesla; build:4193; Android 14)"
+TESLA_X_USER_AGENT = "TeslaApp/4.55.5-4193/4193/android/14"
 TODAY = time.strftime('%Y-%m-%d')
 TELEMETRIC_URL = "https://www.tesla-order-status-tracker.de/push/telemetry.php"
 OPTION_CODES_URL = "https://www.tesla-order-status-tracker.de/push/option_codes.php"
