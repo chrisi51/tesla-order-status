@@ -3,12 +3,13 @@
 import json as jsonlib
 import time
 import requests
+from curl_cffi import requests as tls_requests
 from typing import Dict, Union
 
 from app.utils.helpers import exit_with_status
 from app.utils.locale import t
 
-def request_with_retry(url, headers=None, data=None, json=None, max_retries=3, exit_on_error=True):
+def request_with_retry(url, headers=None, data=None, json=None, max_retries=3, exit_on_error=True, impersonate=None):
     """Perform a GET or POST request with exponential backoff retries.
 
     Parameters
@@ -37,23 +38,29 @@ def request_with_retry(url, headers=None, data=None, json=None, max_retries=3, e
         429: t("429"),
         '5xx': t("5xx"),
     }
+    # Tesla's auth edge fingerprints the TLS handshake of the token request: a
+    # plain OpenSSL handshake yields a token that owner-api rejects with 403.
+    http = tls_requests if impersonate else requests
+    kw = {'impersonate': impersonate} if impersonate else {}
+
     for attempt in range(max_retries):
         try:
             if data is None and json is None:
-                response = requests.get(url, headers=headers)
+                response = http.get(url, headers=headers, **kw)
             else:
                 if json is not None:
-                    response = requests.post(url, headers=headers, json=json)
+                    response = http.post(url, headers=headers, json=json, **kw)
                 else:
                     # Falls string/bytes: direkt senden; falls dict: sauber als JSON senden
                     if isinstance(data, (dict, list)):
-                        response = requests.post(
+                        response = http.post(
                             url,
                             headers={"Content-Type": "application/json", **(headers or {})},
                             data=jsonlib.dumps(data, separators=(",", ":")),
+                            **kw,
                         )
                     else:
-                        response = requests.post(url, headers=headers, data=data)
+                        response = http.post(url, headers=headers, data=data, **kw)
 
             try:
                 response.raise_for_status()

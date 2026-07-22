@@ -49,7 +49,7 @@ Download the complete project to your machine. If you are unsure how, you can gr
 1. Install [Python 3](https://www.python.org/downloads/) for your operating system.
 2. Install the required dependencies:
 ```sh
-pip install requests pyperclip
+pip install requests curl_cffi pyperclip
 ```
 - requests: for the api calls (required)
 - pyperclip: for copying share output to the clipboard automatically (optional)
@@ -62,7 +62,7 @@ python3 -m venv .venv
 # activate it
 source .venv/bin/activate
 # install dependencies just for this project
-python3 -m pip install requests pyperclip
+python3 -m pip install requests curl_cffi pyperclip
 ```
 
 ## Usage
