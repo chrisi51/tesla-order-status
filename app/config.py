@@ -7,7 +7,7 @@ from typing import Any, Dict
 # -------------------------
 # Constants
 # -------------------------
-TESLA_APP_VERSION = "4.55.5-4193"
+TESLA_APP_VERSION = "9.99.9-9999"
 TESLA_USER_AGENT = "Tesla/4.55.5 (com.teslamotors.tesla; build:4193; Android 14)"
 TESLA_X_USER_AGENT = "TeslaApp/4.55.5-4193/4193/android/14"
 TODAY = time.strftime('%Y-%m-%d')

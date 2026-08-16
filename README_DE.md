@@ -57,7 +57,7 @@ Lade das komplette Projekt auf deinen Rechner. Wenn du unsicher bist, nutze einf
 2. Installiere die benötigten Abhängigkeiten:
 
 ```sh
-pip install requests pyperclip
+pip install requests curl_cffi pyperclip
 ```
 
 * `requests`: für die API‑Aufrufe (erforderlich)
@@ -73,7 +73,7 @@ python3 -m venv .venv
 # aktivieren
 source .venv/bin/activate
 # Abhängigkeiten nur für dieses Projekt installieren
-python3 -m pip install requests pyperclip
+python3 -m pip install requests curl_cffi pyperclip
 ```
 
 ## Benutzung

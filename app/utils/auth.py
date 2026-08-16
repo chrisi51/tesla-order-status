@@ -15,7 +15,7 @@ from app.utils.locale import t
 from app.utils.params import STATUS_MODE
 
 CLIENT_ID = 'ownerapi'
-REDIRECT_URI = 'https://auth.tesla.com/void/callback'
+REDIRECT_URI = 'tesla://auth/callback'
 AUTH_URL = 'https://auth.tesla.com/oauth2/v3/authorize'
 TOKEN_URL = 'https://auth.tesla.com/oauth2/v3/token'
 SCOPE = 'openid email offline_access'
@@ -77,7 +77,7 @@ def _exchange_code_for_tokens(auth_code,code_verifier):
         'redirect_uri': REDIRECT_URI,
         'code_verifier': code_verifier,
     }
-    response = request_with_retry(TOKEN_URL, None, token_data)
+    response = request_with_retry(TOKEN_URL, None, token_data, impersonate='chrome')
     return response.json()
 
 
@@ -104,7 +104,7 @@ def _refresh_tokens(refresh_token):
         'client_id': CLIENT_ID,
         'refresh_token': refresh_token,
     }
-    response = request_with_retry(TOKEN_URL, None, token_data)
+    response = request_with_retry(TOKEN_URL, None, token_data, impersonate='chrome')
     return response.json()
 
 
